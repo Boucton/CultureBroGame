@@ -68,6 +68,31 @@ textarea{width:100%;height:90px;font:14px monospace;border:3px solid var(--or);b
 .medaille{font-size:2em;text-align:center}
 .toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--parch);border:3px solid var(--or);border-radius:30px;padding:8px 18px;z-index:100;box-shadow:0 4px 12px #0008;max-width:90%;text-align:center;animation:toast 2.4s forwards}
 @keyframes toast{0%{opacity:0;top:90px}10%,85%{opacity:1;top:70px}100%{opacity:0}}
+/* Phase 5 : enluminures zellige — motifs géométriques islamiques en CSS pur */
+.zellige{position:relative}
+.zellige{background-image:
+ repeating-conic-gradient(from 45deg,#c9962b22 0% 25%,transparent 0% 50%),
+ radial-gradient(circle at 50% 0,#f0d27a22 2px,transparent 3px)}
+.carte{background:
+ conic-gradient(from 0deg at 50% 50%,transparent 0 340deg,#c9962b44 340deg 360deg),
+ radial-gradient(circle at 50% -20%,#f0d27a33 0%,transparent 40%),
+ var(--parch)}
+.titre h1{background:linear-gradient(90deg,var(--or),var(--or2),var(--or));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* sprites pixel-art */
+.spriteimg{image-rendering:pixelated;width:96px;height:96px;filter:drop-shadow(0 4px 6px #0006)}
+.braiseimg{image-rendering:pixelated;width:80px;height:80px;margin:0 auto;display:block;filter:drop-shadow(0 4px 6px #0006)}
+/* animations Phase 5 */
+@keyframes impact{0%{transform:scale(1)}30%{transform:scale(1.25) rotate(-6deg)}60%{transform:scale(.95) rotate(4deg)}100%{transform:scale(1)}}
+@keyframes trembledeg{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes flashvictoire{0%{filter:brightness(1)}30%{filter:brightness(1.8)}100%{filter:brightness(1)}}
+@keyframes apparition{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:no-preference){
+ .impact{animation:impact .5s}
+ .trembledeg{animation:trembledeg .45s}
+ .flashvictoire{animation:flashvictoire 1s}
+ .spriteimg,.braiseimg{animation:apparition .4s,respire2 2s 1s infinite alternate}
+}
+@keyframes respire2{to{transform:translateY(-4px)}}
 @media(max-width:600px){html,body{font-size:17px}}
 @media(prefers-reduced-motion:no-preference){#app>*{animation:fondu .35s}}
 @keyframes fondu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -219,6 +244,12 @@ const BANQUE={disciplines:[
 {id:"TEC-10",othman:{enonce:"Quelle invention a permis de compter très vite ?",choix:["La calculatrice","Le crayon","Le stylo"],reponse:0,explication:"La calculatrice fait les calculs très vite à notre place."},badr:{enonce:"Comment appelle-t-on un calcul répété automatiquement par une machine ?",choix:["Un algorithme","Un texte","Un dessin"],reponse:0,explication:"Un algorithme est une suite d'étapes suivies par une machine pour résoudre un problème — mot qui vient du savant Al-Khwarizmi !"}}
 ]}
 ]};
+
+const SPRITES={
+heros:"iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAB2klEQVR42u2avUoDQRSFz4ptMLYJCoKV8afcZmsLiaAPEJBYCFpYmCJYWFhIChsLLUXIAxgwWFinSWGhJqkEwZC0RvYBxiIJaCD7k5ndnY3ndEsmMzdnvnt372wA6n/LiDqA1a1b8fu68ZgPNaYZEhCR0htHwunzzsu1QQKmkYDRnHeT15rQez0VAJBcvzBIgI4EuOW8m8bVhOHOj8orCSRAt5yftCawBuhGgGzO+60JxZ1FAQClyicJ8KNZ3XN+nObT/XVkewcSoDrnvzrPvr7XLM8BADK5b8la80ACIiFg0pyvld4BAFZxeUDC32v/IgHhPAeovr/L1oChckt9Asof277OE1gDog5Adue9do0kQLYG1G8yQucfcv9kAwB2NxMAAPOwyRoQaTdod2tKiUmkLMdY2Q2yGaIBNIAG6GyAaWZhmlll40hA3HqBer2qdBwJiGs3WD67dO7rzwskYKoJCHuHSUDYBAzPDVqVg0Dm9drnk4CoCNivngQccp41QEsD7G5NqD4FCmMdEqBqokTKMtzO7XRch3cB1RPuvV0FGnBB1xQgAQPdrR0HG3GbzwHx7gaDkt83QiSABtAAGkADEOD/A1YWko4dW6vdM2TGkwAaQAMoSoF+ABcnksCQLnd7AAAAAElFTkSuQmCC",
+gardien:"iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABNUlEQVR42u2ZzQ2CMBiGi+HIARYgepcFDBuwAfHIGB4dw6NxAzYwLuACxgXw4L3ejCGmVOkPP89zI5TSvn37fR9FCAAAAJgrge0X5Fkp+zx/vp6sjnExdwcgwNwFCE13GEeptNnf43kPcMCQs4BpB7TBAQRBBEAABBhTFrhdtl/bLTdH8U8709mALYAAxIBxVIDEALYAAvgRIM9K2fdczwZxlEpV3NEdN1lApaAQ+qeyrrOAbjbomgcO0IkBKgV9rXyXA3QdjAPGVgGarghxgGsH7JJEeX/fNE6dQCXo68VVXYiqLvgW8E3oau+3ORT12wmf1zhgLA4wha+VxwFTE6DrfAAHmK4EfX8DmKoIyQJTWXmyAAIggJsYsF7lQ5/TT6fZbAEEIAboMcT/gzgAARAAAKAXL9w0X4u16K6DAAAAAElFTkSuQmCC",
+boss:"iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABhklEQVR42u2avUoDMRzAE3Gvuh6uIhx6g4OLL9BHcBCc7SBCJx/ASSgOdi508BF8AZcOHdpy4C5d/XiCuBih0SOm+ejZ+/22K00u/PPLPx8XIQAAAAAiMernatTPVV3qMdloegcRgKYHQMZ+QVZ0go7b+eReYgABIADB2Ez9wu3syOn/b/MxBqxFAMphS5TDVrJyGFC3HJCffXzlgOXKYQABIAD/IwfY1v6x53UMWLUBV69PC8+Dg0uv+s5ndwvPXQyoqQG3u4VKMeb1e7ovE4kBAZCxet537NtywXdO8DQBA0L3fG/nJGqDzVnG1wQMCNXzugf0StD15MeGnk30qbCtHRgQ2oC/RrxqL/D8eOrUsP32w6+/m98FfE1gJbhsQVuEfXOAWb5qRanbUWUCBoQywDW7/uyxPeFXPmz7MCDWeUDqHMBusK4GpM4BGEAOwIC05wGrwtxr+N4ZwoDQFZq3OY8vShmzvioj3qfXSgghtg5vJAY0iazoKJe7iRgAAAAAAA3lE259j/jt5WxyAAAAAElFTkSuQmCC"
+};
 
 /* ======== SECTION CRÉATURES DE SAVOIR (Phase 4) ======== */
 /* Le cœur Pokémon de la V2 : chaque royaume abrite des Créatures de savoir.
@@ -660,7 +691,7 @@ const SCENES={
    const nouv=monte?BIBLIOTHECaire.capturer(st2,e.disc,nivApres):null;
    const xpMax=st2.niveau*3;
    UI.afficher(`${UI.hud()}<div class="carte">
-   <div class="medaille">${gagne?icoG+" 🏆":"🌑 ✨"}</div>
+   <div class="medaille ${gagne?"flashvictoire":""}">${gagne?icoG+" 🏆":"🌑 ✨"}</div>
    <h2 style="text-align:center">${gagne?"Victoire ! "+nomG+" s'incline.":"L'Encre Noire a eu le dernier mot..."}</h2>
    <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune."+(monte?` Royaume de ${e.nom} : niveau ${nivAvant} → ${nivApres} !`:" Les questions maîtrisées renforcent ton royaume."):"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
    <p style="text-align:center">Or : ${st2.or} 🪙 — Expérience : ${st2.xp}/${xpMax} — Rang : ${st2.rang} (niveau ${st2.niveau})</p>
@@ -703,10 +734,10 @@ const SCENES={
    }).join("");
    UI.afficher(`${UI.hud()}<div class="carte">
    <div class="arene">
-   <div class="camp"><div class="sprite">🧙‍♂️</div><b>${st.nom}</b>
+   <div class="camp">${UI.sprite("heros","spriteimg","🧙‍♂️")}<b>${st.nom}</b>
     <div class="jauge"><i style="width:${pvH}%"></i></div><div class="petite">${Math.round(e.herosPv)} PV</div></div>
    <div class="vs">${e.modeSagesse?"📜":"⚡"}</div>
-   <div class="camp"><div class="braise">${icoG}</div><b>${nomG}</b>
+   <div class="camp">${UI.sprite(e.boss?"boss":"gardien","braiseimg",icoG)}<b>${nomG}</b>
     <div class="jauge"><i style="width:${pvG}%"></i></div><div class="petite">${Math.round(e.gardienPv)} PV — Niveau ${e.niv}</div></div>
    </div>
    <div class="epreuve"><h3>${e.modeSagesse?"📜 Épreuve de Sagesse (dégâts doublés si tu réussis !)":(revision?"🔁 Question de révision — l'Encre Noire te la reposant, tu vas la vaincre !":"✨ Épreuve du Gardien")}</h3>
@@ -718,11 +749,11 @@ const SCENES={
   /* Menu d'actions principal du tour du héros (T2) */
   UI.afficher(`${UI.hud()}<div class="carte">
   <div class="arene">
-   <div class="camp"><div class="sprite">🧙‍♂️</div><b>${st.nom}</b>
+   <div class="camp">${UI.sprite("heros","spriteimg","🧙‍♂️")}<b>${st.nom}</b>
     <div class="jauge"><i style="width:${pvH}%"></i></div><div class="petite">${Math.round(e.herosPv)} / ${e.herosPvMax} PV</div>
     <div class="petite">⚔️${c.attaque} 🛡️${c.defense} 🏃${c.agilite} 📜${c.sagesse}</div></div>
    <div class="vs">⚡</div>
-   <div class="camp"><div class="braise">${icoG}</div><b>${nomG}${e.defenseActive?" (tu te défends)":""}</b>
+   <div class="camp">${UI.sprite(e.boss?"boss":"gardien","braiseimg",icoG)}<b>${nomG}${e.defenseActive?" (tu te défends)":""}</b>
     <div class="jauge"><i style="width:${pvG}%"></i></div><div class="petite">${Math.round(e.gardienPv)} PV — Niveau ${e.niv}</div></div>
   </div>
   <h3>Que fais-tu, ${st.nom} ?</h3>
@@ -830,7 +861,7 @@ const SCENES={
    const cartes=CREATURES.filter(c=>c.royaume===d.id).map(c=>{
     const aie=captures.includes(c.id);
     return `<div class="disco" style="min-height:90px;${aie?"":"filter:grayscale(1);opacity:.6"}">
-     <div class="ico">${aie?c.ico:"❔"}</div>
+     <div class="ico" style="${aie?"font-size:2.6em;animation:apparition .4s":""}">${aie?c.ico:"❔"}</div>
      <h3>${aie?c.nom:"???"}</h3>
      <div class="rang">${aie?c.cri:"Se capture au niveau "+c.rang+" du royaume"}</div>
     </div>`;
@@ -869,6 +900,8 @@ const SCENES={
 /* ======== SECTION INTERFACE ======== */
 const UI={
  afficher(html){document.getElementById("app").innerHTML=html},
+ /* Sprite pixel-art avec repli emoji si absent */
+ sprite(nom,classe,repli){const b64=SPRITES[nom];return b64?`<img src="data:image/png;base64,${b64}" class="${classe}" alt="${repli}">`:`<div class="${classe.replace("img","")}">${repli}</div>`},
  etat(){return E.joueurs[MOTEUR.joueurActif]},
  hud(){const st=this.etat();return `<div class="hud">
   <span class="joueur actif">🧙 ${st.nom} — ${st.rang} (niv. ${st.niveau})</span>
@@ -884,6 +917,8 @@ const UI={
   ECO.recompense(ok);SAUVEGARDE.sauver();
   if(COMBAT.etat){COMBAT.etat.questionEnCours=null;COMBAT.etat.indiceUtilise=false}
   this.toast(ok?(COMBAT.etat&&COMBAT.etat.modeSagesse?"📜 Sagesse ! Coup double !":"✨ Juste ! Le Gardien vacille !"):"🌑 L'Encre Noire assombrit ta lame...");
+  const carte=document.querySelector(".carte");
+  if(carte){carte.classList.add(ok?"impact":"trembledeg");setTimeout(()=>carte.classList.remove("impact","trembledeg"),600)}
   COMBAT.resoudre(ok);
  }
 };
