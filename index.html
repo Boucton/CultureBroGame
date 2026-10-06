@@ -264,13 +264,16 @@ function lecon(rates,suite){
 function lancerConcours(id,fin){
  const t=trial(id),L=[];melanger(t.questions).slice(0,3).forEach(q=>["badr","othman"].forEach(j=>L.push({q,j})));
  const chrono=E.opt.chrono!==false;let i=0,bonnes=0,reste=60,tm=null,fini=false;
- const clore=()=>{if(fini)return;fini=true;clearInterval(tm);fin(bonnes,L.length)};
+ const aff=()=>{const c=document.getElementById("chrono");if(c)c.textContent=reste};
+ const stopC=()=>{if(tm){clearInterval(tm);tm=null;const c=document.getElementById("chrono");if(c)c.textContent="⏸ "+reste}};
+ const startC=()=>{if(!chrono||tm||fini)return;tm=setInterval(()=>{reste--;aff();if(reste<=0)clore()},1000)};
+ const clore=()=>{if(fini)return;fini=true;stopC();fin(bonnes,L.length)};
  function suiv(){
   if(fini)return;if(i>=L.length||(chrono&&reste<=0))return clore();
   const {q,j}=L[i++];E.actif=j;
-  poserQ(q,t,j,`${hud(1)}<div class="hud"><div class="tour">${chrono?`⏱️ <span id="chrono">${reste}</span> s`:"Sans chronomètre"} · question ${i}/${L.length}</div></div>`,bon=>{if(bon)bonnes++;return{label:"Suite",auto:1100,go:suiv}});
+  poserQ(q,t,j,`${hud(1)}<div class="hud"><div class="tour">${chrono?`⏱️ <span id="chrono">${reste}</span> s`:"Sans chronomètre"} · question ${i}/${L.length}</div></div>`,bon=>{if(bon)bonnes++;stopC();return{label:"Suite",auto:1100,go:()=>{startC();suiv()}}});
  }
- if(chrono)tm=setInterval(()=>{reste--;const c=document.getElementById("chrono");if(c)c.textContent=reste;if(reste<=0)clore()},1000);
+ startC();
  SON.corne();suiv();
 }
 
