@@ -3,640 +3,448 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Les Chroniques d'Al-Qamar</title>
+<title>Al-Qamar V2 — Le Pokédex de Culture Générale</title>
 <style>
 :root{--or:#c9962b;--or2:#f0d27a;--mer:#1b2f6b;--mer2:#2c4a9e;--grenat:#8c1d2f;--parch:#f3e6c4;--parch2:#e6d3a3;--encre:#2a1d10}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--mer);color:var(--encre);font-family:"Trebuchet MS",Verdana,sans-serif;font-size:20px}
-body{background:radial-gradient(circle at 50% 0,#2c4a9e,#101b44 70%) fixed}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 0,#2c4a9e,#101b44 70%) fixed;color:var(--encre);font-family:"Trebuchet MS",Verdana,sans-serif;font-size:20px}
+#app{max-width:920px;margin:0 auto;padding:14px;position:relative;z-index:1}
 h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:.2em 0}
-#app{max-width:900px;margin:0 auto;padding:14px}
-.carte{background:var(--parch);border:5px double var(--or);border-radius:10px;padding:18px;box-shadow:0 6px 18px #0008}
 .titre{text-align:center;color:var(--or2);text-shadow:0 3px 0 #000a}
-.titre h1{font-size:2.4em}.titre p{font-size:1.1em;margin:0 0 10px}
-.menu{display:grid;gap:12px;margin:14px 0}
-button{font:inherit;font-size:1em;padding:12px 18px;border-radius:8px;border:3px solid var(--or);background:var(--mer2);color:#fff;cursor:pointer;text-align:left}
+.titre h1{font-size:2em}
+.titre p{font-size:1em;margin:0 0 10px}
+.carte{position:relative;background:var(--parch);border:5px double var(--or);border-radius:10px;padding:18px;box-shadow:0 6px 18px #0008;margin:12px 0}
+.carte::before,.carte::after{content:"✦";position:absolute;color:var(--or);font-size:22px;line-height:1;text-shadow:0 1px 0 #0006}
+.carte::before{top:-3px;left:5px}
+.carte::after{bottom:-3px;right:5px}
+button{font:inherit;font-size:1em;padding:12px 16px;border-radius:8px;border:3px solid var(--or);background:var(--mer2);color:#fff;cursor:pointer;text-align:left}
 button:hover:not(:disabled){background:var(--grenat)}
 button:focus-visible{outline:4px solid var(--or2)}
 button:disabled{opacity:.55;cursor:not-allowed}
-.petit{font-size:.8em;padding:8px 12px}
-.hud{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;color:#fff;margin-bottom:10px}
-.tour{background:var(--or);color:var(--encre);padding:8px 16px;border-radius:30px;font-weight:bold;border:3px solid var(--or2)}
-.tour.othman{background:var(--grenat);color:#fff}
-.sac span{background:#0006;padding:6px 10px;border-radius:8px;margin-right:6px;display:inline-block}
-.plateau{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:10px solid var(--grenat);outline:4px solid var(--or);border-radius:6px;background:var(--parch2);width:100%}
-.case{aspect-ratio:1;border:1px solid #8a6d2f88;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
-.case:nth-child(odd){background:#ecd9a8}.case:hover{background:#fff6;}
-.case.gris{filter:grayscale(1)}
-.case.dest::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:var(--or);opacity:.5}
-.pion{width:90%;height:90%;display:flex;align-items:flex-end;justify-content:center;gap:0;z-index:2}
-.pion svg{width:100%;height:100%}
-.dialogue{display:flex;gap:14px;align-items:flex-start}
-.portrait{width:96px;flex:none;background:var(--mer);border:4px solid var(--or);border-radius:10px;padding:4px}
-.portrait svg{width:100%;display:block}
-.nom{font-weight:bold;color:var(--grenat)}
-.texte{line-height:1.5;font-size:1.1em}
+.petit{font-size:.8em;padding:7px 12px}
+.menu{display:grid;gap:12px;margin:14px 0}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.disco{position:relative;background:#fff8e6;border:3px solid var(--mer2);border-radius:10px;padding:12px;cursor:pointer;min-height:120px}
+.disco:hover{border-color:var(--or);background:#fff6cf}
+.disco .ico{font-size:2em}
+.disco h3{margin:.1em 0 .2em;font-size:1em;color:var(--grenat)}
+.disco .rang{font-size:.8em;opacity:.85}
+.nivbar{background:#0003;border:2px solid var(--or);border-radius:12px;height:12px;overflow:hidden;margin-top:6px}
+.nivbar i{display:block;height:100%;background:linear-gradient(90deg,var(--grenat),var(--or),var(--or2))}
+.hud{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;color:#fff;margin-bottom:10px}
+.hud .joueur{background:#0006;padding:6px 12px;border-radius:20px;border:2px solid var(--or)}
+.hud .joueur.actif{background:var(--or);color:var(--encre);font-weight:bold}
+.hud .or{background:#0006;padding:6px 12px;border-radius:20px;border:2px solid var(--or2)}
 .choix{display:grid;gap:10px;margin:14px 0}
 .choix button{background:#fff8e6;color:var(--encre);border-color:var(--mer2)}
 .choix button:hover:not(:disabled){background:var(--or2)}
-.choix button.bon{background:#2e7d32;color:#fff}.choix button.mauvais{background:var(--grenat);color:#fff}
-.retour{border-left:6px solid var(--or);padding:8px 12px;margin:10px 0;background:#fff7;border-radius:4px}
-.retour.ok{border-color:#2e7d32}.retour.ko{border-color:var(--grenat)}
-.pagination{color:#fff;opacity:.85;text-align:center;font-size:.8em;margin-top:12px}
-.medaille{font-size:2em;text-align:center}
-@media(max-width:600px){html,body{font-size:17px}.portrait{width:70px}}
-@media(prefers-reduced-motion:no-preference){.pion{transition:transform .15s}}
-.jauge{background:#0004;border:3px solid var(--or);border-radius:20px;height:22px;overflow:hidden;margin:6px 0}
-.jauge i{display:block;height:100%;background:linear-gradient(90deg,var(--or),var(--or2))}
-.onglets{display:flex;gap:10px;margin-bottom:10px}.onglets button.sel{background:var(--or);color:var(--encre)}
-.epreuve{border-top:3px double var(--or);margin-top:14px;padding-top:8px}
-.entree{background:#fff8;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:.9em;line-height:1.45}
-.entree.ok{border-left:6px solid #2e7d32}.entree.ko{border-left:6px solid var(--grenat)}
-.revoir{background:var(--grenat);color:#fff;border-radius:12px;padding:2px 10px;font-size:.8em}
-textarea{width:100%;height:90px;font:14px monospace;border:3px solid var(--or);border-radius:6px;padding:6px}
-
-.choix button.bon{background:#2e7d32;color:#fff}.choix button.mauvais{background:#d98a1f;color:#2a1d10}
-.retour.ko,.entree.ko{border-color:#d98a1f}
+.choix button.bon{background:#2e7d32;color:#fff}
+.choix button.mauvais{background:#d98a1f;color:#2a1d10}
 .choix button b{display:inline-block;width:1.7em;height:1.7em;line-height:1.7em;text-align:center;border-radius:50%;background:var(--or);color:var(--encre);margin-right:10px}
-.niv{min-width:160px;font-size:.8em}.petitej{height:12px;margin:3px 0 0}
-#mute{position:fixed;top:8px;right:8px;z-index:50;text-align:center}
-.tourcarte{text-align:center}.tourcarte .portrait{margin:0 auto 10px;width:120px}
-.tourcarte.badr{border-color:var(--mer2)}.tourcarte.othman{border-color:var(--grenat)}
-.spark{position:fixed;width:10px;height:10px;border-radius:50%;background:radial-gradient(#fff,var(--or2));pointer-events:none;z-index:99;animation:jaillir .9s ease-out forwards}
-@keyframes jaillir{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
-@keyframes trem{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@keyframes fondu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:no-preference){.tremble{animation:trem .4s}#app>*{animation:fondu .35s}}
-
-.plateau{background:var(--c1,#e6d3a3)}.case:nth-child(odd){background:var(--c2,#ecd9a8)}.case:hover{background:#fff8!important}
-.deco{font-size:1.7em;opacity:.85}
-.case.pnj::before{content:"▼";position:absolute;top:-4px;color:var(--or);font-size:1.3em;z-index:3;text-shadow:0 1px 0 #000a}
-.arene{display:flex;justify-content:space-around;align-items:center;gap:8px;text-align:center}.camp{flex:1}
-.pionD{width:100px;margin:0 auto}.pionD svg{width:100%;display:block}.pionD .pion{height:auto}
+.retour{border-left:6px solid var(--or);padding:8px 12px;margin:10px 0;background:#fff7;border-radius:4px;line-height:1.45}
+.retour.ok{border-color:#2e7d32}
+.retour.ko{border-color:#d98a1f}
+.arene{display:flex;justify-content:space-around;align-items:center;gap:8px;text-align:center;flex-wrap:wrap}
+.camp{flex:1;min-width:140px}
 .vs{font:bold 1.6em Georgia,serif;color:var(--grenat)}
-.braise{width:90px;margin:0 auto 8px}.braise svg{width:100%}
-.nofade>*{animation:none!important}
-@media(prefers-reduced-motion:no-preference){.braise svg{animation:vacille 1.2s infinite alternate}.case.pnj::before{animation:saute .8s infinite alternate}}
+.sprite{font-size:3em;line-height:1}
+.jauge{background:#0004;border:3px solid var(--or);border-radius:20px;height:22px;overflow:hidden;margin:6px 0}
+.jauge i{display:block;height:100%;background:linear-gradient(90deg,var(--grenat),#d98a1f)}
+.jauge.xp{height:12px;border-width:2px;margin:3px 0 0}
+.jauge.xp i{background:linear-gradient(90deg,var(--mer2),var(--or2))}
+.braise{width:80px;margin:0 auto;font-size:2.6em}
+@media(prefers-reduced-motion:no-preference){.braise{animation:vacille 1.2s infinite alternate}}
 @keyframes vacille{from{transform:scale(1) rotate(-2deg)}to{transform:scale(1.08) rotate(2deg)}}
-@keyframes saute{to{transform:translateY(-5px)}}
-
-.carte{position:relative}.carte::before,.carte::after{content:"✦";position:absolute;color:var(--or);font-size:22px;line-height:1;text-shadow:0 1px 0 #0006}
-.carte::before{top:-3px;left:5px}.carte::after{bottom:-3px;right:5px}
-.case:nth-child(n){background-image:linear-gradient(45deg,#0001 25%,transparent 25% 75%,#0001 75%),linear-gradient(45deg,#0001 25%,transparent 25% 75%,#0001 75%);background-size:16px 16px;background-position:0 0,8px 8px}
-.deco{width:80%}.item{width:55%;filter:drop-shadow(0 0 6px #f0d27a)}.deco svg,.item svg{width:100%;display:block}
-.ico{display:inline-block;width:38px;vertical-align:middle}.ico svg{width:100%;display:block}
-.mini{display:inline-block;width:30px;vertical-align:middle}.mini svg{width:100%;display:block}
-.barre{text-decoration:line-through}
-.ciel{position:fixed;left:0;right:0;top:0;height:120px;pointer-events:none;z-index:0}#app{position:relative;z-index:1}
-.ciel circle{animation:scint 3s infinite alternate}@keyframes scint{from{opacity:.25}to{opacity:1}}
-.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--parch);border:3px solid var(--or);border-radius:30px;padding:8px 18px;z-index:100;box-shadow:0 4px 12px #0008;max-width:90%;text-align:center;animation:toast 2s forwards}
+.palan{display:inline-block;background:var(--grenat);color:#fff;border-radius:20px;padding:4px 12px;font-size:.85em;margin:2px 4px 2px 0;border:2px solid var(--or2)}
+.entree{background:#fff8;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:.9em;line-height:1.45}
+.entree.ok{border-left:6px solid #2e7d32}
+.entree.ko{border-left:6px solid #d98a1f}
+.revoir{background:var(--grenat);color:#fff;border-radius:12px;padding:1px 8px;font-size:.75em}
+textarea{width:100%;height:90px;font:14px monospace;border:3px solid var(--or);border-radius:6px;padding:6px}
+.onglets{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.onglets button.sel{background:var(--or);color:var(--encre)}
+.tour{background:var(--or);color:var(--encre);padding:8px 16px;border-radius:30px;font-weight:bold;border:3px solid var(--or2);margin:8px auto;display:block}
+.tour.othman{background:var(--grenat);color:#fff}
+.medaille{font-size:2em;text-align:center}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--parch);border:3px solid var(--or);border-radius:30px;padding:8px 18px;z-index:100;box-shadow:0 4px 12px #0008;max-width:90%;text-align:center;animation:toast 2.4s forwards}
 @keyframes toast{0%{opacity:0;top:90px}10%,85%{opacity:1;top:70px}100%{opacity:0}}
-@media(prefers-reduced-motion:no-preference){.plateau .pion svg{animation:respire 1.4s ease-in-out infinite alternate}.item{animation:respire 1s ease-in-out infinite alternate}}
-@keyframes respire{to{transform:translateY(-3px)}}
-
-/* itération 4 : sol seul grisé, textures par scène, horizon, décors à découvrir */
-.case,.case:nth-child(n),.case:hover{background:none!important}
-.case{isolation:isolate}
-.sol{position:absolute;inset:0;z-index:-1;background:var(--tex),var(--c1)}
-.case:nth-child(odd) .sol{background:var(--tex),var(--c2)}
-.case:hover .sol{box-shadow:inset 0 0 0 99px #fff4}
-.deco.neuf{filter:drop-shadow(0 0 5px #f0d27a)}
-.horizon{height:64px;border:10px solid var(--grenat);border-bottom:0;border-radius:6px 6px 0 0;overflow:hidden}.horizon svg{width:100%;height:100%;display:block}
-.affiche{display:flex;justify-content:center;align-items:flex-end;gap:14px}.affiche .m{width:90px}.affiche .lune{width:120px}.affiche svg{width:100%;display:block}
-@media(prefers-reduced-motion:no-preference){.affiche .m{animation:respire 2.2s ease-in-out infinite alternate}}
-
-#modale{position:fixed;inset:0;background:#000a;z-index:60;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
-#modale .carte{width:100%;max-width:860px;margin:8px 0}
-.illus{width:150px;margin:8px auto}.illus svg{width:100%;display:block;border:2px solid var(--or);border-radius:4px;background:#fff}
-.defi{margin:6px 0}.defi.ok{opacity:.8}
-.petit.sel{background:var(--or);color:var(--encre);border-color:var(--grenat)}
+@media(max-width:600px){html,body{font-size:17px}}
+@media(prefers-reduced-motion:no-preference){#app>*{animation:fondu .35s}}
+@keyframes fondu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div class="ciel" id="ciel"></div>
 <div id="app"></div>
-<button id="mute" class="petit" aria-label="Son"></button>
-
 <script>
 "use strict";
-/* ============================ DONNÉES ============================ */
-// Banque intégrée (repli) : épreuve T01 seulement pour l'itération 1.
-let BANQUE=null;
-function validerBanque(o,msg){if(!o||!Array.isArray(o.trials)||o.trials.length<1)throw new Error(msg);return o}
-function ecranBanqueManuelle(titre,detail){
- ecran(`<div class="carte"><h2>📖 Banque de questions</h2><p class="texte">${titre}</p>
- <p class="texte">${detail}</p>
- <p class="texte">Sélectionne le fichier <b>Banque_de_questions_Acte_I.json</b> (il est à côté de index.html) :</p>
- <input type="file" id="fichier" accept=".json,application/json" style="font:inherit">
- <p id="err" class="texte"></p></div>`);
- document.getElementById("fichier").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
-  const r=new FileReader();r.onload=()=>{try{BANQUE=validerBanque(JSON.parse(r.result),"Structure inattendue.");accueil()}catch(e){document.getElementById("err").textContent="⚠️ Fichier illisible : "+e.message}};
-  r.readAsText(f)};
-}
-function chargerBanque(){
- let fait=false;
- const manuel=(t,d)=>{if(fait)return;fait=true;ecranBanqueManuelle(t,d)};
- try{
-  const x=new XMLHttpRequest();x.open("GET","Banque_de_questions_Acte_I.json");x.overrideMimeType("application/json");
-  x.onload=()=>{if(fait)return;if(x.status===200){try{BANQUE=validerBanque(JSON.parse(x.responseText),"Structure inattendue.");accueil()}catch(e){manuel("Le fichier JSON de la banque est illisible.",String(e.message))}}else manuel("La banque n'a pas pu être chargée automatiquement.","(réponse "+x.status+")")};
-  x.onerror=()=>manuel("Le navigateur bloque la lecture automatique des fichiers en local (double-clic).",
-   "C'est normal : ouvre le jeu via un serveur local ou GitHub Pages pour un chargement automatique — ou choisis le fichier ci-dessous, une seule fois par partie.");
-  x.onabort=()=>manuel("Chargement interrompu.","");
-  setTimeout(()=>manuel("La banque met trop de temps à charger.","Choisis le fichier manuellement ci-dessous."),6000);
-  x.send();
- }catch(e){manuel("Chargement impossible.","Choisis le fichier manuellement ci-dessous.")}
-}
-const trial=id=>BANQUE&&BANQUE.trials.find(t=>t.id===id);
+/* V2 — LE POKÉDEX DE CULTURE GÉNÉRALE
+   Chaque discipline est un « royaume » à conquérir niveau par niveau,
+   comme un Pokémon de culture générale : 10 disciplines × 10 niveaux. */
 
-const JOUEURS={
- badr:{nom:"Badr",titre:"Badr le Stratège",fam:"Nimrod",couleur:"#1b2f6b",lettre:"B"},
- othman:{nom:"Othman",titre:"Othman le Lunaliste",fam:"Selene",couleur:"#8c1d2f",lettre:"O"}
-};
-const COUP_DUR=[ // conséquences narratives d'une erreur
- "L'Encre Noire s'étend un instant sur la carte, puis recule. Les lignes pâlissent.",
- "Un fragment de parchemin se froisse dans ta main. Le Bibliothécaire lève un sourcil, patient.",
- "Une ombre d'encre glisse sur le sol, mais ton familier la repousse. Réessaie !",
- "La Boussole-Rose tremble et perd le Nord une seconde. Retrouve ton calme."
-];
+/* ======== SECTION DONNÉES ======== */
+/* La banque V2 : 10 disciplines « royaumes » × 10 questions = 100 questions.
+   Chaque question a une version othman (8 ans, primaire) et une version badr (12 ans, collège).
+   L'ordre des questions dans une discipline correspond à la difficulté croissante (niveau 1 à 10). */
+const BANQUE={disciplines:[
+{id:"geo",nom:"Géographie",ico:"🗺️",questions:[
+{id:"GEO-01",othman:{enonce:"Sur une carte du monde, combien y a-t-il de grands continents ?",choix:["3","7","10"],reponse:1,explication:"Il y a 7 continents : Afrique, Amérique du Nord, Amérique du Sud, Antarctique, Asie, Europe et Océanie."},badr:{enonce:"Quel est le plus grand océan du monde ?",choix:["L'océan Atlantique","L'océan Pacifique","L'océan Indien"],reponse:1,explication:"L'océan Pacifique est le plus grand : il couvre à lui seul environ un tiers de la surface de la Terre."}},
+{id:"GEO-02",othman:{enonce:"Quelle est la capitale de la France ?",choix:["Lyon","Paris","Marseille"],reponse:1,explication:"Paris est la capitale de la France. C'est là que se trouve la tour Eiffel."},badr:{enonce:"Quelle est la capitale du Japon ?",choix:["Kyoto","Tokyo","Osaka"],reponse:1,explication:"Tokyo est la capitale du Japon ; Kyoto était l'ancienne capitale impériale."}},
+{id:"GEO-03",othman:{enonce:"Quel est le plus long fleuve de France ?",choix:["La Seine","La Loire","Le Rhône"],reponse:1,explication:"La Loire est le plus long fleuve de France : environ 1 000 km."},badr:{enonce:"Quel fleuve traverse la ville du Caire, en Égypte ?",choix:["Le Nil","L'Amazone","Le Danube"],reponse:0,explication:"Le Nil traverse Le Caire. C'est l'un des plus longs fleuves du monde (environ 6 650 km)."}},
+{id:"GEO-04",othman:{enonce:"Le Sahara, le grand désert de sable, se trouve sur quel continent ?",choix:["L'Amérique du Nord","L'Afrique","L'Europe"],reponse:1,explication:"Le Sahara se trouve en Afrique : c'est le plus grand désert chaud du monde."},badr:{enonce:"Quelle chaîne de montagnes sépare la France de l'Espagne ?",choix:["Les Alpes","Les Pyrénées","Le Jura"],reponse:1,explication:"Les Pyrénées forment la frontière naturelle entre la France et l'Espagne."}},
+{id:"GEO-05",othman:{enonce:"Quelle est la montagne la plus haute du monde ?",choix:["Le mont Blanc","L'Everest","Le Kilimandjaro"],reponse:1,explication:"L'Everest, dans l'Himalaya, est la plus haute montagne du monde."},badr:{enonce:"Quelle est environ la hauteur de l'Everest ?",choix:["4 810 m","8 849 m","12 000 m"],reponse:1,explication:"L'Everest culmine à environ 8 849 mètres. Le mont Blanc, lui, mesure environ 4 810 m."}},
+{id:"GEO-06",othman:{enonce:"Quel est le plus grand continent ?",choix:["L'Afrique","L'Asie","L'Europe"],reponse:1,explication:"L'Asie est le plus grand continent, et aussi le plus peuplé."},badr:{enonce:"Quel pays a la plus grande superficie au monde ?",choix:["La Chine","La Russie","Le Canada"],reponse:1,explication:"La Russie est le plus grand pays du monde ; le Canada est deuxième, la Chine troisième."}},
+{id:"GEO-07",othman:{enonce:"Quelle mer se trouve au sud de la France ?",choix:["La Manche","La Méditerranée","La mer du Nord"],reponse:1,explication:"La Méditerranée baigne le sud de la France ; la Manche est au nord."},badr:{enonce:"Quel détroit sépare l'Europe de l'Afrique ?",choix:["Le détroit de Gibraltar","Le Bosphore","Le détroit de Béring"],reponse:0,explication:"Le détroit de Gibraltar, entre l'Espagne et le Maroc, sépare l'Europe de l'Afrique."}},
+{id:"GEO-08",othman:{enonce:"Quelle direction est à l'opposé du Nord ?",choix:["L'Est","Le Sud","L'Ouest"],reponse:1,explication:"Sur une rose des vents : le Nord en haut, le Sud en bas, l'Est à droite, l'Ouest à gauche."},badr:{enonce:"Quelle ligne imaginaire coupe la Terre en deux hémisphères ?",choix:["L'équateur","Le méridien de Greenwich","Le tropique du Cancer"],reponse:0,explication:"L'équateur sépare l'hémisphère Nord et l'hémisphère Sud ; Greenwich sépare Est et Ouest."}},
+{id:"GEO-09",othman:{enonce:"Sur quel continent se trouve l'Égypte et ses pyramides ?",choix:["L'Afrique","L'Asie","L'Europe"],reponse:0,explication:"L'Égypte se trouve en Afrique, au bord du Nil, avec ses célèbres pyramides."},badr:{enonce:"Quelle est la capitale de l'Australie ?",choix:["Sydney","Canberra","Melbourne"],reponse:1,explication:"Canberra est la capitale de l'Australie, même si Sydney est la ville la plus connue."}},
+{id:"GEO-10",othman:{enonce:"Dans quelle ville se trouve la tour Eiffel ?",choix:["Lyon","Paris","Nice"],reponse:1,explication:"La tour Eiffel est à Paris ; elle a été construite en 1889."},badr:{enonce:"Quel est le plus grand pays d'Amérique du Sud ?",choix:["L'Argentine","Le Brésil","Le Pérou"],reponse:1,explication:"Le Brésil est le plus grand pays d'Amérique du Sud et le plus peuplé du continent."}}
+]},
+{id:"hist",nom:"Histoire",ico:"🏺",questions:[
+{id:"HIS-01",othman:{enonce:"Les grandes pyramides se trouvent en...",choix:["Égypte","France","Chine"],reponse:0,explication:"Les pyramides de Gizeh sont en Égypte, construites il y a plus de 4 500 ans."},badr:{enonce:"Comment appelle-t-on les rois de l'Égypte ancienne ?",choix:["Les pharaons","Les césars","Les sultans"],reponse:0,explication:"Les rois d'Égypte ancienne étaient appelés pharaons, comme Toutankhamon ou Ramsès II."}},
+{id:"HIS-02",othman:{enonce:"Au Moyen Âge, les chevaliers vivaient dans...",choix:["Des châteaux forts","Des gratte-ciel","Des igloos"],reponse:0,explication:"Au Moyen Âge, les seigneurs et chevaliers vivaient dans des châteaux forts en pierre."},badr:{enonce:"Comment appelle-t-on le guerrier noble du Japon ancien ?",choix:["Le samouraï","Le viking","Le légionnaire"],reponse:0,explication:"Le samouraï était un guerrier japonais, au service d'un seigneur ; il suivait le code de l'honneur du bushido."}},
+{id:"HIS-03",othman:{enonce:"Qui a été le premier homme à marcher sur la Lune ?",choix:["Neil Armstrong","Louis Pasteur","Christophe Colomb"],reponse:0,explication:"Neil Armstrong a posé le pied sur la Lune en 1969, lors de la mission Apollo 11."},badr:{enonce:"En quelle année l'homme a-t-il marché sur la Lune pour la première fois ?",choix:["1945","1969","1989"],reponse:1,explication:"Le 21 juillet 1969, Neil Armstrong puis Buzz Aldrin ont marché sur la Lune."}},
+{id:"HIS-04",othman:{enonce:"Quelle invention a permis de fabriquer beaucoup de livres ?",choix:["Le téléphone","L'imprimerie","La télévision"],reponse:1,explication:"L'imprimerie a permis de reproduire les livres rapidement, au lieu de les copier à la main."},badr:{enonce:"Qui a inventé l'imprimerie en Europe vers 1440 ?",choix:["Gutenberg","Léonard de Vinci","Newton"],reponse:0,explication:"Johannes Gutenberg a inventé l'imprimerie à caractères mobiles vers 1440, en Allemagne."}},
+{id:"HIS-05",othman:{enonce:"Les Romains ont construit un grand monument en pierre à Rome : le...",choix:["Colisée","Louvre","Taj Mahal"],reponse:0,explication:"Le Colisée est un immense amphithéâtre construit par les Romains il y a près de 2 000 ans."},badr:{enonce:"Quel peuple a construit le Colisée ?",choix:["Les Romains","Les Grecs","Les Égyptiens"],reponse:0,explication:"Le Colisée a été construit à Rome sous l'Empire romain, vers 80 après J.-C."}},
+{id:"HIS-06",othman:{enonce:"La Révolution française a eu lieu en...",choix:["1789","1889","1589"],reponse:0,explication:"En 1789, le peuple de France s'est révolté : c'est le début de la Révolution française."},badr:{enonce:"Quel roi a été renversé par la Révolution française ?",choix:["Louis XVI","Napoléon","Charlemagne"],reponse:0,explication:"Louis XVI était roi de France en 1789 ; la monarchie a été abolie en 1792."}},
+{id:"HIS-07",othman:{enonce:"Napoléon Bonaparte est devenu...",choix:["Un empereur de France","Un pharaon","Un astronaute"],reponse:0,explication:"Napoléon a été empereur des Français au début du XIXe siècle."},badr:{enonce:"Dans quelle bataille Napoléon a-t-il été définitivement vaincu en 1815 ?",choix:["Waterloo","Austerlitz","Hastings"],reponse:0,explication:"La bataille de Waterloo, en Belgique, a marqué la fin de l'Empire de Napoléon en 1815."}},
+{id:"HIS-08",othman:{enonce:"Les anciens Égyptiens écrivaient avec des dessins appelés...",choix:["Les hiéroglyphes","Les emojis","Les alphabet"],reponse:0,explication:"Les Égyptiens écrivaient avec des signes-dessins : les hiéroglyphes."},badr:{enonce:"Comment s'appelle la plus ancienne écriture de Mésopotamie ?",choix:["Le cunéiforme","Le latin","Le morse"],reponse:0,explication:"Le cunéiforme, écrit avec des triangles en forme de clous sur des tablettes d'argile, est la plus ancienne écriture connue."}},
+{id:"HIS-09",othman:{enonce:"Christophe Colomb a traversé l'océan et a découvert...",choix:["L'Amérique","La Lune","L'Australie"],reponse:0,explication:"En 1492, Christophe Colomb a traversé l'Atlantique et a atteint l'Amérique."},badr:{enonce:"En quelle année Christophe Colomb a-t-il atteint l'Amérique ?",choix:["1492","1789","1912"],reponse:0,explication:"Christophe Colomb a atteint l'Amérique en 1492, croyant arriver aux Indes."}},
+{id:"HIS-10",othman:{enonce:"La Seconde Guerre mondiale s'est terminée en...",choix:["1945","1918","2000"],reponse:0,explication:"La Seconde Guerre mondiale s'est terminée en 1945."},badr:{enonce:"Quel pays a envoyé le premier homme dans l'espace, en 1961 ?",choix:["L'URSS","Les États-Unis","La France"],reponse:0,explication:"L'URSS a envoyé Youri Gagarine dans l'espace le 12 avril 1961."}}
+]},
+{id:"sci",nom:"Sciences et nature",ico:"🔬",questions:[
+{id:"SCI-01",othman:{enonce:"De quoi les plantes ont-elles besoin pour pousser ?",choix:["L'eau et la lumière du soleil","Des bonbons","Du chocolat"],reponse:0,explication:"Les plantes ont besoin d'eau, de lumière et de terre pour pousser."},badr:{enonce:"Comment s'appelle la transformation de l'eau en vapeur ?",choix:["La condensation","L'évaporation","La solidification"],reponse:1,explication:"Quand l'eau chauffe, elle s'évapore et devient de la vapeur ; en refroidissant, elle se condense en gouttelettes."}},
+{id:"SCI-02",othman:{enonce:"L'eau devient de la glace quand il fait...",choix:["très froid","très chaud","très chaud et froid"],reponse:0,explication:"Quand il fait très froid, en dessous de 0 degré, l'eau gèle et devient de la glace."},badr:{enonce:"À quelle température l'eau gèle-t-elle (pression normale) ?",choix:["0 °C","10 °C","−10 °C"],reponse:0,explication:"L'eau gèle à 0 degré Celsius ; c'est pourquoi la glace se forme en hiver."}},
+{id:"SCI-03",othman:{enonce:"Le soleil nous donne...",choix:["De la lumière et de la chaleur","De la pluie","Du vent"],reponse:0,explication:"Le Soleil nous éclaire et nous réchauffe : c'est l'énergie du Soleil qui fait vivre la Terre."},badr:{enonce:"Parmi ces sources d'énergie, laquelle est renouvelable ?",choix:["Le vent","Le charbon","Le pétrole"],reponse:0,explication:"Le vent (énergie éolienne) est renouvelable ; le charbon et le pétrole sont des énergies fossiles, épuisables."}},
+{id:"SCI-04",othman:{enonce:"Combien de pattes a une araignée ?",choix:["8","6","4"],reponse:0,explication:"Une araignée a 8 pattes ; les insectes, eux, en ont 6."},badr:{enonce:"Comment appelle-t-on le scientifique qui étudie les insectes ?",choix:["Un entomologiste","Un astronome","Un géologue"],reponse:0,explication:"L'entomologiste étudie les insectes ; l'astronome observe le ciel, le géologue les roches."}},
+{id:"SCI-05",othman:{enonce:"La chenille se transforme en...",choix:["Un papillon","Une abeille","Un oiseau"],reponse:0,explication:"La chenille se transforme en papillon : c'est une vraie métamorphose !"},badr:{enonce:"Comment s'appelle la transformation de la chenille en papillon ?",choix:["La métamorphose","La photosynthèse","La migration"],reponse:0,explication:"La métamorphose est le passage de la chenille (larve) à la chrysalide puis au papillon."}},
+{id:"SCI-06",othman:{enonce:"Un arc-en-ciel apparaît quand il y a...",choix:["De la pluie et du soleil","De la neige et du vent","Des nuages noirs"],reponse:0,explication:"L'arc-en-ciel apparaît quand la lumière du soleil traverse les gouttes de pluie."},badr:{enonce:"Quelles couleurs se trouvent aux deux extrémités d'un arc-en-ciel ?",choix:["Rouge et violet","Bleu et vert","Jaune et orange"],reponse:0,explication:"L'arc-en-ciel va du rouge (extérieur) au violet (intérieur) : rouge, orange, jaune, vert, bleu, indigo, violet."}},
+{id:"SCI-07",othman:{enonce:"Quel objet sert à mesurer la température ?",choix:["Le thermomètre","La règle","Le compas"],reponse:0,explication:"Le thermomètre mesure la température : il nous dit s'il fait chaud ou froid."},badr:{enonce:"Quel instrument mesure la force du vent ?",choix:["L'anémomètre","Le baromètre","Le chronomètre"],reponse:0,explication:"L'anémomètre mesure la vitesse du vent ; le baromètre mesure la pression de l'air."}},
+{id:"SCI-08",othman:{enonce:"Un aimant attire...",choix:["Le fer","Le bois","Le plastique"],reponse:0,explication:"Un aimant attire les objets en fer, comme les clous ou les trombones."},badr:{enonce:"Comment s'appellent les deux extrémités d'un aimant ?",choix:["Le pôle nord et le pôle sud","Le plus et le moins","Le haut et le bas"],reponse:0,explication:"Un aimant a un pôle nord et un pôle sud : deux pôles opposés s'attirent, deux pôles identiques se repoussent."}},
+{id:"SCI-09",othman:{enonce:"Au soleil, les flaques d'eau sur la route...",choix:["Disparaissent en s'évaporant","Deviennent des pierres","Se transforment en sable"],reponse:0,explication:"Le soleil chauffe l'eau des flaques, qui s'évapore dans l'air : c'est pour ça qu'elles disparaissent."},badr:{enonce:"Comment s'appelle le retour de la vapeur d'eau à l'état liquide ?",choix:["La condensation","L'évaporation","La fusion"],reponse:0,explication:"La condensation transforme la vapeur d'eau en gouttelettes liquides : c'est ainsi que se forment les nuages."}},
+{id:"SCI-10",othman:{enonce:"Quel animal pond des œufs ?",choix:["La poule","La vache","Le chat"],reponse:0,explication:"La poule pond des œufs : les oiseaux naissent d'œufs, comme les reptiles et les poissons."},badr:{enonce:"Quel est le seul mammifère capable de vraiment voler ?",choix:["La chauve-souris","L'écureuil volant","Le pingouin"],reponse:0,explication:"La chauve-souris est le seul mammifère qui vole vraiment avec ses ailes membraneuses ; l'écureuil volant ne fait que planer."}}
+]}
+,{id:"math",nom:"Mathématiques",ico:"📐",questions:[
+{id:"MAT-01",othman:{enonce:"Combien font 7 + 8 ?",choix:["14","15","16"],reponse:1,explication:"7 + 8 = 15 : on peut se repérer avec 7 + 7 = 14, puis ajouter 1."},badr:{enonce:"Combien font 12 × 12 ?",choix:["124","144","156"],reponse:1,explication:"12 × 12 = 144 : c'est le célèbre « carré » de 12."}},
+{id:"MAT-02",othman:{enonce:"Combien font 20 − 6 ?",choix:["12","14","16"],reponse:1,explication:"20 − 6 = 14 : on enlève 6 à 20, il reste 14."},badr:{enonce:"Combien font 144 ÷ 12 ?",choix:["11","12","14"],reponse:1,explication:"144 ÷ 12 = 12, car 12 × 12 = 144."}},
+{id:"MAT-03",othman:{enonce:"Quelle figure a 3 côtés ?",choix:["Le triangle","Le carré","Le cercle"],reponse:0,explication:"Le triangle a 3 côtés et 3 angles ; le carré en a 4."},badr:{enonce:"Comment appelle-t-on un triangle qui a un angle droit ?",choix:["Un triangle isocèle","Un triangle rectangle","Un triangle équilatéral"],reponse:1,explication:"Un triangle rectangle possède un angle droit (90°)."}},
+{id:"MAT-04",othman:{enonce:"Combien de minutes y a-t-il dans une heure ?",choix:["30","60","100"],reponse:1,explication:"Une heure dure 60 minutes ; une demi-heure dure 30 minutes."},badr:{enonce:"Combien de secondes y a-t-il dans un quart d'heure ?",choix:["900","1 500","600"],reponse:0,explication:"Un quart d'heure = 15 minutes = 15 × 60 = 900 secondes."}},
+{id:"MAT-05",othman:{enonce:"Quel nombre est pair ?",choix:["7","10","13"],reponse:1,explication:"10 est pair : un nombre pair se termine par 0, 2, 4, 6 ou 8."},badr:{enonce:"Quel est le plus petit nombre premier ?",choix:["0","1","2"],reponse:2,explication:"2 est le plus petit nombre premier : divisible uniquement par 1 et par lui-même."}},
+{id:"MAT-06",othman:{enonce:"Une pomme coûte 2 pièces d'or. Combien coûtent 3 pommes ?",choix:["5 pièces","6 pièces","8 pièces"],reponse:1,explication:"3 × 2 = 6 : trois pommes coûtent 6 pièces d'or."},badr:{enonce:"Un marchand vend 3 pommes à 2 pièces chacune et rend 4 pièces sur 10. Combien reste-t-il à payer ?",choix:["2 pièces","0 pièce","4 pièces"],reponse:1,explication:"3 × 2 = 6 pièces ; 10 − 6 = 4 pièces rendues... donc tout est payé, il reste 0 pièce."}},
+{id:"MAT-07",othman:{enonce:"Combien font 5 × 5 ?",choix:["10","25","55"],reponse:1,explication:"5 × 5 = 25 : c'est le résultat de la table de 5."},badr:{enonce:"Quelle est la racine carrée de 81 ?",choix:["8","9","11"],reponse:1,explication:"9 × 9 = 81, donc la racine carrée de 81 est 9."}},
+{id:"MAT-08",othman:{enonce:"Si tu partages 12 bonbons entre 3 amis, chacun reçoit...",choix:["3 bonbons","4 bonbons","6 bonbons"],reponse:1,explication:"12 ÷ 3 = 4 : chaque ami reçoit 4 bonbons."},badr:{enonce:"Quelle est la moitié de 150 ?",choix:["70","75","80"],reponse:1,explication:"150 ÷ 2 = 75, la moitié de 150."}},
+{id:"MAT-09",othman:{enonce:"Quel nombre vient juste après 49 ?",choix:["40","50","60"],reponse:1,explication:"Après 49 vient 50 : on passe à la dizaine suivante."},badr:{enonce:"Quel nombre vient juste avant 1 000 ?",choix:["900","999","1 001"],reponse:1,explication:"Juste avant 1 000 vient 999."}},
+{id:"MAT-10",othman:{enonce:"La partie la plus longue d'une règle graduée mesure en...",choix:["Centimètres","Litres","Grammes"],reponse:0,explication:"Une règle graduée mesure des longueurs en centimètres ; les litres mesurent des liquides et les grammes des masses."},badr:{enonce:"Quelle unité utilise-t-on pour mesurer un volume de lait ?",choix:["Le litre","Le kilogramme","Le mètre"],reponse:0,explication:"Le litre mesure un volume (le lait d'une brique) ; le kilogramme mesure une masse, le mètre une longueur."}}
+]},
+{id:"fr",nom:"Français",ico:"📚",questions:[
+{id:"FRA-01",othman:{enonce:"Comment s'appelle l'ensemble des lettres utilisées pour écrire ?",choix:["L'alphabet","La ponctuation","Le dictionnaire"],reponse:0,explication:"L'alphabet français compte 26 lettres, de A à Z."},badr:{enonce:"Combien de lettres compte l'alphabet français ?",choix:["24","26","30"],reponse:1,explication:"L'alphabet français compte 26 lettres : 6 voyelles (a, e, i, o, u, y) et 20 consonnes."}},
+{id:"FRA-02",othman:{enonce:"Dans « le chat noir », quel mot est un nom ?",choix:["le","chat","noir"],reponse:1,explication:"« chat » est le nom (l'animal) ; « noir » décrit le chat, c'est un adjectif."},badr:{enonce:"Dans « le chat noir dort », quelle est la fonction de « noir » ?",choix:["Un adjectif qualificatif","Un verbe","Un article"],reponse:0,explication:"« noir » est un adjectif qualificatif : il qualifie le nom « chat »."}},
+{id:"FRA-03",othman:{enonce:"Quelle est la majuscule de la lettre b ?",choix:["D","B","P"],reponse:1,explication:"La majuscule de b est B ; on l'utilise en début de phrase et aux noms propres."},badr:{enonce:"Quel mot prend une majuscule ?",choix:["la france","Le Maroc","le lundi"],reponse:1,explication:"Les noms propres (pays, prénoms, villes) prennent une majuscule : le Maroc, la France."}},
+{id:"FRA-04",othman:{enonce:"Combien de syllabes dans « che-val » ?",choix:["1","2","3"],reponse:1,explication:"« cheval » se découpe en 2 syllabes : che-val."},badr:{enonce:"Combien de syllabes dans « his-to-ri-o-graphie » ?",choix:["4","5","6"],reponse:1,explication:"« historiographie » compte 5 syllabes : his-to-rio-graphie."}},
+{id:"FRA-05",othman:{enonce:"Le contraire de « grand » est...",choix:["petit","gros","haut"],reponse:0,explication:"Le contraire (l'antonyme) de « grand » est « petit »."},badr:{enonce:"Quel est le féminin de « directeur » ?",choix:["directeuse","directrice","directeure"],reponse:1,explication:"Le féminin de « directeur » est « directrice » ; de même : acteur → actrice."}},
+{id:"FRA-06",othman:{enonce:"Le pluriel de « un cheval » est...",choix:["des chevals","des chevaux","des cheval"],reponse:1,explication:"Un cheval, des chevaux : certains noms en -al font leur pluriel en -aux."},badr:{enonce:"Quel est le pluriel de « un travail » ?",choix:["des travails","des travaux","des travail"],reponse:1,explication:"Un travail, des travaux : comme cheval → chevaux, le pluriel se forme en -aux."}},
+{id:"FRA-07",othman:{enonce:"Qu'est-ce qu'un verbe ?",choix:["Un mot qui décrit une action","Un mot qui décrit une couleur","Le nom d'un pays"],reponse:0,explication:"Le verbe est le mot de l'action : chanter, courir, dormir..."},badr:{enonce:"Dans « Il lit un livre », à quel temps est le verbe « lit » ?",choix:["Le futur","Le présent","L'imparfait"],reponse:1,explication:"« lit » est au présent de l'indicatif : l'action se passe maintenant."}},
+{id:"FRA-08",othman:{enonce:"Quelle phrase commence par une majuscule et finit par un point ?",choix:["le chat dort","Le chat dort.","le chat dort."],reponse:1,explication:"Une phrase correcte commence par une majuscule et se termine par un point."},badr:{enonce:"Quel signe de ponctuation marque une exclamation ?",choix:["Le point d'exclamation","Le point virgule","Les deux-points"],reponse:0,explication:"Le point d'exclamation ( ! ) marque la surprise, la joie ou l'ordre."}},
+{id:"FRA-09",othman:{enonce:"« Le loup __ dans la forêt » : quel verbe convient ?",choix:["dort","dort le","la dort"],reponse:0,explication:"« Le loup dort dans la forêt » : le verbe « dort » suit le sujet « le loup »."},badr:{enonce:"Quel est le synonyme de « rapide » ?",choix:["lent","vif","fatigué"],reponse:1,explication:"« vif » est un synonyme de « rapide » ; « lent » est son contraire."}},
+{id:"FRA-10",othman:{enonce:"Dans une bibliothèque, on emprunte des...",choix:["livres","ballons","vélos"],reponse:0,explication:"À la bibliothèque, on emprunte des livres et on lit des histoires."},badr:{enonce:"Comment appelle-t-on une personne qui écrit des livres ?",choix:["Un écrivain","Un lecteur","Un imprimeur"],reponse:0,explication:"L'écrivain (ou auteur) écrit les livres ; le lecteur les lit, l'imprimeur les fabrique."}}
+]}
+,{id:"astro",nom:"Astronomie",ico:"🌙",questions:[
+{id:"AST-01",othman:{enonce:"La nuit, on voit briller des étoiles et...",choix:["La Lune","Deux soleils","Des nuages rouges"],reponse:0,explication:"La nuit, on voit la Lune et les étoiles ; le Soleil, lui, brille le jour."},badr:{enonce:"Quelle est l'étoile la plus proche de la Terre ?",choix:["La Lune","Le Soleil","L'étoile Polaire"],reponse:1,explication:"Le Soleil est l'étoile la plus proche de la Terre ; la Lune n'est pas une étoile, c'est un satellite."}},
+{id:"AST-02",othman:{enonce:"Autour de quel astre tourne la Terre ?",choix:["La Lune","Le Soleil","Mars"],reponse:1,explication:"La Terre tourne autour du Soleil : un tour complet dure un an."},badr:{enonce:"Combien de temps met la Terre pour faire le tour du Soleil ?",choix:["Un jour","Un mois","Un an"],reponse:2,explication:"La Terre fait le tour du Soleil en 365 jours et un quart : c'est une année."}},
+{id:"AST-03",othman:{enonce:"Quelle forme a la Lune quand elle est entière ?",choix:["Un croissant","Un cercle plein","Un demi-cercle"],reponse:1,explication:"La pleine Lune est un disque tout rond et brillant."},badr:{enonce:"Pourquoi la Lune change-t-elle de forme (phases) ?",choix:["Parce qu'on la voit sous différents angles éclairés par le Soleil","Parce qu'elle se casse","Parce que des nuages la cachent"],reponse:0,explication:"Les phases de la Lune viennent de l'angle sous lequel on voit sa partie éclairée par le Soleil."}},
+{id:"AST-04",othman:{enonce:"Le Soleil se lève...",choix:["le matin","le soir","la nuit"],reponse:0,explication:"Le Soleil se lève le matin à l'Est et se couche le soir à l'Ouest."},badr:{enonce:"Dans quel sens la Terre tourne-t-elle sur elle-même ?",choix:["D'ouest en est","D'est en ouest","Elle ne tourne pas"],reponse:0,explication:"La Terre tourne d'ouest en est : c'est pourquoi le Soleil semble se lever à l'est."}},
+{id:"AST-05",othman:{enonce:"Comment s'appelle notre planète ?",choix:["Mars","La Terre","Jupiter"],reponse:1,explication:"Nous vivons sur la planète Terre, la troisième planète du Soleil."},badr:{enonce:"Quelle est la troisième planète à partir du Soleil ?",choix:["Vénus","La Terre","Mars"],reponse:1,explication:"Ordre des planètes : Mercure, Vénus, Terre, Mars, Jupiter, Saturne, Uranus, Neptune."}},
+{id:"AST-06",othman:{enonce:"Combien de planètes tournent autour de notre Soleil ?",choix:["3","8","12"],reponse:1,explication:"Il y a 8 planètes autour du Soleil, de Mercure à Neptune."},badr:{enonce:"Quelle est la plus grande planète du système solaire ?",choix:["Jupiter","Saturne","La Terre"],reponse:0,explication:"Jupiter est la plus grande : toutes les autres planètes réunies tiendraient dedans."}},
+{id:"AST-07",othman:{enonce:"Quel animal est allé dans l'espace avant l'homme ?",choix:["La chienne Laïka","Le chat Félix","Le pigeon Ramier"],reponse:0,explication:"Laïka, une petite chienne, a été envoyée dans l'espace en 1957, avant les premiers hommes."},badr:{enonce:"Quelle sonde a été la première à quitter le système solaire ?",choix:["Voyager 1","Apollo 11","Hubble"],reponse:0,explication:"Voyager 1, lancée en 1977, est l'objet humain le plus lointain : elle a quitté le système solaire."}},
+{id:"AST-08",othman:{enonce:"Que voit-on parfois en regardant le ciel avec un télescope ?",choix:["Des planètes comme Saturne","Des pays","Des océans de la Terre"],reponse:0,explication:"Avec un télescope, on peut voir des planètes comme Saturne et ses anneaux."},badr:{enonce:"Quelle planète est connue pour ses magnifiques anneaux ?",choix:["Mars","Saturne","Mercure"],reponse:1,explication:"Saturne est entourée d'anneaux formés de milliards de morceaux de glace et de roche."}},
+{id:"AST-09",othman:{enonce:"Les étoiles brillent la nuit comme des...",choix:["petites lampes très loin","lampes de poche","bougies sur la Terre"],reponse:0,explication:"Les étoiles sont comme des soleils très lointains : elles brillent faiblement car elles sont très loin."},badr:{enonce:"Pourquoi les étoiles scintillent-elles ?",choix:["À cause de l'air qui bouge dans l'atmosphère","Parce qu'elles clignent des yeux","Parce qu'elles s'allument et s'éteignent"],reponse:0,explication:"L'air de l'atmosphère bouge sans arrêt et fait vaciller la lumière des étoiles : elles scintillent."}},
+{id:"AST-10",othman:{enonce:"Comment appelle-t-on un scientifique qui observe le ciel ?",choix:["Un astronome","Un boulanger","Un pilote"],reponse:0,explication:"L'astronome observe les étoiles, les planètes et les galaxies."},badr:{enonce:"Comment appelle-t-on la Voie lactée ?",choix:["Notre galaxie","Une comète","Une constellation"],reponse:0,explication:"La Voie lactée est la galaxie où se trouve notre Soleil : vue de l'intérieur, elle ressemble à une bande laiteuse."}}
+]},
+{id:"corp",nom:"Corps humain et santé",ico:"🫀",questions:[
+{id:"COR-01",othman:{enonce:"Quel organe bat dans ta poitrine ?",choix:["Le cœur","Le cerveau","Le foie"],reponse:0,explication:"Le cœur bat sans arrêt pour envoyer le sang dans tout le corps."},badr:{enonce:"Quel organe pompe le sang dans le corps ?",choix:["Le cœur","Les poumons","L'estomac"],reponse:0,explication:"Le cœur est une pompe musclée qui fait circuler le sang environ 100 000 fois par jour."}},
+{id:"COR-02",othman:{enonce:"Avec quoi respires-tu ?",choix:["Les poumons","Les oreilles","Les genoux"],reponse:0,explication:"On respire avec les poumons : ils prennent l'air et gardent son oxygène."},badr:{enonce:"Quel gaz notre corps prend-il dans l'air pour vivre ?",choix:["L'oxygène","L'azote","Le gaz carbonique"],reponse:0,explication:"Nous respirons l'oxygène de l'air et nous rejetons du gaz carbonique."}},
+{id:"COR-03",othman:{enonce:"Combien as-tu de dents de lait quand tu es petit ?",choix:["20","32","10"],reponse:0,explication:"Un enfant a 20 dents de lait ; un adulte en a 32."},badr:{enonce:"Combien de dents un adulte a-t-il normalement ?",choix:["20","28","32"],reponse:2,explication:"Un adulte a 32 dents en comptant les dents de sagesse."}},
+{id:"COR-04",othman:{enonce:"Pour avoir de bons os, il faut boire...",choix:["Du lait","Du soda","Du café"],reponse:0,explication:"Le lait contient du calcium, qui rend les os solides."},badr:{enonce:"Quel minéral rend les os solides ?",choix:["Le calcium","Le fer","Le sel"],reponse:0,explication:"Le calcium (dans le lait, le fromage) solidifie les os ; le fer, lui, sert à faire le sang."}},
+{id:"COR-05",othman:{enonce:"Que faut-il faire avant de manger ?",choix:["Se laver les mains","Se laver les pieds","Courir"],reponse:0,explication:"Se laver les mains avant de manger éloigne les microbes."},badr:{enonce:"Comment s'appellent les minuscules êtres vivants qui peuvent nous rendre malades ?",choix:["Les microbes","Les atomes","Les volcans"],reponse:0,explication:"Les microbes (bactéries, virus) sont invisibles à l'œil nu et peuvent rendre malades : d'où le lavage des mains."}},
+{id:"COR-06",othman:{enonce:"Combien d'yeux as-tu ?",choix:["1","2","4"],reponse:1,explication:"Nous avons 2 yeux, et grâce aux deux ensemble, nous voyons en relief (en 3D)."},badr:{enonce:"Quel organe commande tout le corps ?",choix:["Le cerveau","Le cœur","L'estomac"],reponse:0,explication:"Le cerveau est le chef : il pense, mémorise et commande les mouvements via les nerfs."}},
+{id:"COR-07",othman:{enonce:"Combien de temps doit-on dormir chaque nuit quand on est enfant ?",choix:["Environ 10 heures","2 heures","16 heures"],reponse:0,explication:"Un enfant a besoin d'environ 10 heures de sommeil pour grandir et apprendre."},badr:{enonce:"Que se passe-t-il quand on manque de sommeil ?",choix:["On mémorise moins bien et on est fatigué","On devient plus intelligent","Rien du tout"],reponse:0,explication:"Le sommeil aide le cerveau à classer les souvenirs de la journée : sans sommeil, on apprend moins bien."}},
+{id:"COR-08",othman:{enonce:"Le sang coule dans des tuyaux du corps appelés...",choix:["les veines","les routes","les os"],reponse:0,explication:"Le sang circule dans les vaisseaux sanguins : artères et veines."},badr:{enonce:"Comment s'appellent les petits vaisseaux les plus fins du corps ?",choix:["Les capillaires","Les bronches","Les tendons"],reponse:0,explication:"Les capillaires sont si fins qu'une seule goutte de sang s'y file un par un : c'est là que s'échangent oxygène et nutriments."}},
+{id:"COR-09",othman:{enonce:"Faire du sport rend le corps...",choix:["fort et en bonne santé","fatigué pour toujours","malade"],reponse:0,explication:"Le sport muscle le corps, fortifie le cœur et rend de bonne humeur."},badr:{enonce:"Que fait le muscle quand il travaille ?",choix:["Il se contracte et se relâche","Il grandit sans arrêt","Il durcit comme de la pierre"],reponse:0,explication:"Un muscle se contracte (se raccourcit) puis se relâche : c'est ce qui produit le mouvement."}},
+{id:"COR-10",othman:{enonce:"Quelle partie du corps sent les odeurs ?",choix:["Le nez","La bouche","Les mains"],reponse:0,explication:"Le nez sent les odeurs : c'est l'odorat."},badr:{enonce:"Combien de sens avons-nous ?",choix:["4","5","7"],reponse:1,explication:"Les 5 sens : la vue, l'ouïe, l'odorat, le goût et le toucher."}}
+]},
+{id:"islam",nom:"Islam et civilisation arabo-musulmane",ico:"🕌",questions:[
+{id:"ISL-01",othman:{enonce:"Quel est le livre saint de l'islam ?",choix:["Le Coran","La Biblio","Le dictionnaire"],reponse:0,explication:"Le Coran est le livre saint des musulmans, révélé au prophète Mouhammad."},badr:{enonce:"Dans quelle ville est née l'islam ?",choix:["La Mecque","Le Caire","Bagdad"],reponse:0,explication:"L'islam est né à la Mecque, en Arabie, au VIIe siècle."}},
+{id:"ISL-02",othman:{enonce:"Combien y a-t-il de piliers dans l'islam ?",choix:["3","5","7"],reponse:1,explication:"L'islam a 5 piliers : la profession de foi, la prière, l'aumône, le jeûne et le pèlerinage."},badr:{enonce:"Comment appelle-t-on l'aumône obligatoire en islam ?",choix:["La zakat","Le hajj","Le sawm"],reponse:0,explication:"La zakat est l'aumône purificatrice, donnée chaque année aux pauvres."}},
+{id:"ISL-03",othman:{enonce:"Quel mois saint les musulmans jeûnent-ils ?",choix:["Le Ramadan","Le janvier","Le lundi"],reponse:0,explication:"Pendant le Ramadan, les musulmans jeûnent du lever au coucher du soleil."},badr:{enonce:"Quel repas rompt le jeûne chaque soir du Ramadan ?",choix:["Le ftour (iftar)","Le sahour du matin","Le dîner du vendredi"],reponse:0,explication:"Le ftour (iftar) est le repas du soir qui rompt le jeûne ; le sahour est pris avant l'aube."}},
+{id:"ISL-04",othman:{enonce:"Comment s'appelle le lieu de prière des musulmans ?",choix:["La mosquée","L'église","La synagogue"],reponse:0,explication:"Les musulmans prient à la mosquée ; on y entend aussi l'appel à la prière."},badr:{enonce:"Comment appelle-t-on la tour d'où retentit l'appel à la prière ?",choix:["Le minaret","Le mihrab","Le dôme"],reponse:0,explication:"Le minaret est la tour d'où le muezzin appelle à la prière ; le mihrab indique la direction de la Mecque."}},
+{id:"ISL-05",othman:{enonce:"Les chiffres que nous utilisons (1, 2, 3...) viennent des...",choix:["chiffres arabes","chiffres romains","dessins"],reponse:0,explication:"Nos chiffres 1, 2, 3 viennent des chiffres arabes, transmis par les savants de l'islam."},badr:{enonce:"Quelle grande maison de sagesse a été fondée à Bagdad au IXe siècle ?",choix:["La Maison de la sagesse (Bayt al-Hikma)","L'Académie de Platon","La bibliothèque d'Alexandrie"],reponse:0,explication:"Le calife Haroun al-Rachid puis son fils al-Ma'mun ont fondé à Bagdad la Maison de la sagesse, immense centre de traduction et de recherche."}},
+{id:"ISL-06",othman:{enonce:"Le conte d'« Aladin » et ses contes viennent du livre...",choix:["Les Mille et Une Nuits","Le Petit Prince","Harry Potter"],reponse:0,explication:"Aladin, Ali Baba et Sindbad sont des contes des Mille et Une Nuits."},badr:{enonce:"Quel grand conte des Mille et Une Nuits parle d'un marin qui voyage par mer ?",choix:["Sindbad le marin","Ali Baba","Aladin"],reponse:0,explication:"Sindbad le marin fait sept voyages extraordinaires ; Ali Baba découvre la caverne des quarante voleurs."}},
+{id:"ISL-07",othman:{enonce:"En quelle direction les musulmans prient-ils ?",choix:["Vers la Mecque","Vers le nord","Vers la mer"],reponse:0,explication:"Les musulmans prient en direction de la Kaaba, à la Mecque."},badr:{enonce:"Comment appelle-t-on la direction de la prière ?",choix:["La qibla","La zakat","Le wudu"],reponse:0,explication:"La qibla est la direction de la Kaaba ; le mihrab des mosquées l'indique."}},
+{id:"ISL-08",othman:{enonce:"Quel grand savant musulman a écrit des livres de médecine très célèbres ?",choix:["Ibn Sina (Avicenne)","Newton","Einstein"],reponse:0,explication:"Ibn Sina, dit Avicenne, a écrit le Canon de la médecine, utilisé pendant des siècles."},badr:{enonce:"Quel savant andalou a révolutionné la médecine au Xe siècle ?",choix:["Al-Zahrawi","Al-Khwarizmi","Ibn Battuta"],reponse:0,explication:"Al-Zahrawi (Abulcasis), de Cordoue, est le père de la chirurgie moderne ; son livre a servi de référence en Europe pendant 500 ans."}},
+{id:"ISL-09",othman:{enonce:"Quel voyageur musulman a parcouru le monde entier il y a 700 ans ?",choix:["Ibn Battuta","Christophe Colomb","Marco Polo"],reponse:0,explication:"Ibn Battuta a voyagé plus de 30 ans, de l'Afrique à la Chine : 120 000 km à pied et à cheval !"},badr:{enonce:"Quel mathématicien a donné son nom à l'« algèbre » ?",choix:["Al-Khwarizmi","Euclide","Pythagore"],reponse:0,explication:"Al-Khwarizmi a écrit le premier livre d'algèbre ; son nom latinisé a aussi donné le mot « algorithme »."}},
+{id:"ISL-10",othman:{enonce:"Combien de fois par jour un musulman adulte prie-t-il ?",choix:["5","2","10"],reponse:0,explication:"On prie 5 fois par jour : à l'aube, à midi, l'après-midi, au coucher et la nuit."},badr:{enonce:"Quel est le pèlerinage à la Mecque que tout musulman essaye de faire une fois dans sa vie ?",choix:["Le hajj","Le omra du vendredi","Le zakat annuel"],reponse:0,explication:"Le hajj est le grand pèlerinage à la Mecque, cinquième pilier de l'islam."}}
+]}
+,{id:"anim",nom:"Animaux du monde",ico:"🐘",questions:[
+{id:"ANI-01",othman:{enonce:"Quel animal est le plus grand de la terre ?",choix:["L'éléphant d'Afrique","La girafe","Le rhinocéros"],reponse:0,explication:"L'éléphant d'Afrique est le plus grand animal terrestre : il peut peser 6 tonnes."},badr:{enonce:"Quel est le plus grand animal du monde ?",choix:["La baleine bleue","L'éléphant","Le requin blanc"],reponse:0,explication:"La baleine bleue est le plus grand animal ayant jamais existé : jusqu'à 30 mètres et 180 tonnes."}},
+{id:"ANI-02",othman:{enonce:"Quel animal vit dans l'eau et nage avec des nageoires ?",choix:["Le poisson","Le chat","Le lapin"],reponse:0,explication:"Les poissons vivent dans l'eau et respirent avec des branchies."},badr:{enonce:"Comment les poissons respirent-ils sous l'eau ?",choix:["Avec des branchies","Avec des poumons","Avec la peau"],reponse:0,explication:"Les branchies prennent l'oxygène dissous dans l'eau."}},
+{id:"ANI-03",othman:{enonce:"Le roi de la savane, c'est...",choix:["le lion","le tigre","l'ours"],reponse:0,explication:"Le lion vit en groupe (fierté) dans la savane africaine."},badr:{enonce:"Comment appelle-t-on un groupe de lions ?",choix:["Une fierté","Un troupeau","Un banc"],reponse:0,explication:"Un groupe de lions s'appelle une fierté : quelques mâles, plusieurs femelles et leurs lionceaux."}},
+{id:"ANI-04",othman:{enonce:"Quel animal a une longue trompe ?",choix:["L'éléphant","Le cheval","Le zèbre"],reponse:0,explication:"L'éléphant a une trompe qui lui sert à boire, manger et se doucher."},badr:{enonce:"À quoi sert la trompe de l'éléphant ?",choix:["À respirer, boire, saisir et sentir","Seulement à faire du bruit","À piquer comme un dard"],reponse:0,explication:"La trompe sert à tout : respirer, aspirer de l'eau, saisir des branches et même caresser ses petits."}},
+{id:"ANI-05",othman:{enonce:"Quel animal pond ses œufs dans un nid et chante le matin ?",choix:["L'oiseau","Le poisson","Le serpent"],reponse:0,explication:"Les oiseaux pondent des œufs dans un nid et beaucoup chantent à l'aube."},badr:{enonce:"Quel est le plus grand oiseau du monde ?",choix:["L'autruche","L'aigle","Le flamant rose"],reponse:0,explication:"L'autruche est le plus grand oiseau (2,70 m) ; elle ne vole pas mais court très vite."}},
+{id:"ANI-06",othman:{enonce:"Quel insecte butine les fleurs et fait le miel ?",choix:["L'abeille","La mouche","Le moustique"],reponse:0,explication:"L'abeille récolte le nectar des fleurs et le transforme en miel."},badr:{enonce:"Comment les abeilles parlent-elles à la ruche ?",choix:["En dansant","En chantant","En criant"],reponse:0,explication:"L'abeille éclaireuse fait la « danse en huit » pour indiquer la direction et la distance des fleurs."}},
+{id:"ANI-07",othman:{enonce:"Quel animal a une carapace et avance très lentement ?",choix:["La tortue","Le guépard","Le dauphin"],reponse:0,explication:"La tortue est protégée par sa carapace et marche très lentement."},badr:{enonce:"Quel est l'animal terrestre le plus rapide ?",choix:["Le guépard (110 km/h)","Le lion","Le cheval"],reponse:0,explication:"Le guépard sprinte à 110 km/h sur de courtes distances."}},
+{id:"ANI-08",othman:{enonce:"Quel animal de la banquise ne peut pas voler ?",choix:["Le pingouin","Le perroquet","Le moineau"],reponse:0,explication:"Le pingouin vit en Antarctique et nage au lieu de voler."},badr:{enonce:"Comment le dauphin respire-t-il ?",choix:["Il remonte respirer l'air avec un poumon","Il a des branchies","Il respire par la peau"],reponse:0,explication:"Le dauphin est un mammifère : il remonte à la surface respirer l'air avec ses poumons."}},
+{id:"ANI-09",othman:{enonce:"Le chameau qui traverse le désert a...",choix:["des bosses pour stocker la graisse","des ailes","des nageoires"],reponse:0,explication:"Le chameau stocke la graisse dans ses bosses : il peut marcher des jours sans boire."},badr:{enonce:"Pourquoi le chameau supporte-t-il le désert ?",choix:["Il économise l'eau et supporte la chaleur","Il boit du sable","Il dort tout le temps"],reponse:0,explication:"Le chameau peut perdre beaucoup d'eau sans danger et ses larges pattes ne s'enfoncent pas dans le sable."}},
+{id:"ANI-10",othman:{enonce:"Quel animal construit un barrage sur les rivières ?",choix:["Le castor","Le renard","Le hérisson"],reponse:0,explication:"Le castor construit des barrages avec des branchages pour faire son étang maison."},badr:{enonce:"Comment appelle-t-on le fait que certains animaux voyagent chaque année ?",choix:["La migration","L'hibernation","La reproduction"],reponse:0,explication:"La migration est le grand voyage saisonnier (comme les hirondelles ou les baleines) ; l'hibernation, c'est la longue torpeur d'hiver."}}
+]},
+{id:"mus",nom:"Musique et arts",ico:"🎵",questions:[
+{id:"MUS-01",othman:{enonce:"Combien de touches blanches et noires a un piano ?",choix:["52 blanches, 36 noires","20 blanches, 10 noires","88 toutes pareilles"],reponse:0,explication:"Un piano classique a 88 touches : 52 blanches et 36 noires."},badr:{enonce:"Combien de touches a un piano classique ?",choix:["61","88","100"],reponse:1,explication:"Un piano à queue moderne compte 88 touches, du plus grave au plus aigu."}},
+{id:"MUS-02",othman:{enonce:"Sur quel instrument frotte-t-on un archet sur des cordes ?",choix:["Le violon","La batterie","La flûte"],reponse:0,explication:"On frotte les cordes du violon avec un archet pour en sortir le son."},badr:{enonce:"Comment appelle-t-on le bâton garni de crin utilisé sur le violon ?",choix:["L'archet","Le bec","La baguette"],reponse:0,explication:"L'archet, tendu de crin de cheval, frotte les cordes du violon ou de l'alto."}},
+{id:"MUS-03",othman:{enonce:"Combien y a-t-il de notes de musique ?",choix:["5","7","10"],reponse:1,explication:"Il y a 7 notes : do, ré, mi, fa, sol, la, si."},badr:{enonce:"Dans quelle mesure musicale entend-on un temps FORT en premier ?",choix:["À trois temps (mesure 3/4)","À deux temps (mesure 2/4)","Dans aucune mesure"],reponse:0,explication:"La valse, par exemple, est à trois temps : le premier temps est accentué, fort."}},
+{id:"MUS-04",othman:{enonce:"Quel instrument a des cordes que l'on pince avec les doigts ?",choix:["La guitare","Le tambour","Le tuba"],reponse:0,explication:"À la guitare, on pince les cordes avec les doigts ou un médiator."},badr:{enonce:"Comment appelle-t-on le petit bout de plastique pour gratter les cordes de guitare ?",choix:["Le médiator","Le diapason","Le capo"],reponse:0,explication:"Le médiator (plectre) sert à gratter les cordes ; le diapason, lui, donne le « la » de référence."}},
+{id:"MUS-05",othman:{enonce:"La peinture rouge vient souvent d'une couleur mélangée avec...",choix:["du rouge pur","du bleu","du jaune"],reponse:0,explication:"Le rouge est une couleur primaire : on ne peut pas le fabriquer en mélangeant."},badr:{enonce:"Quelles sont les trois couleurs primaires en peinture ?",choix:["Rouge, jaune, bleu","Vert, orange, violet","Noir, blanc, gris"],reponse:0,explication:"Rouge, jaune et bleu sont les primaires : en les mélangeant on obtient les secondaires (orange, vert, violet)."}},
+{id:"MUS-06",othman:{enonce:"Le luth, le oud, est un instrument à cordes qui vient...",choix:["du monde arabe","d'Amérique","du Japon"],reponse:0,explication:"Le oud, roi des instruments arabes, est un luth à cordes pincées, ancêtre de la guitare."},badr:{enonce:"Quel instrument à cordes est le roi de la musique arabo-andalouse ?",choix:["Le oud","Le banjo","Le ukulélé"],reponse:0,explication:"Le oud (luth arabe) accompagne depuis des siècles la musique arabo-andalouse et la poésie."}},
+{id:"MUS-07",othman:{enonce:"Quand on chante tous ensemble, on chante...",choix:["en chœur","seul","dormant"],reponse:0,explication:"Chanter en chœur, c'est chanter ensemble, à plusieurs voix."},badr:{enonce:"Comment appelle-t-on un chant religieux chanté dans les églises ?",choix:["Un chant grégorien","Un rap","Une berceuse"],reponse:0,explication:"Le chant grégorien, du Moyen Âge, est chanté a cappella, en latin."}},
+{id:"MUS-08",othman:{enonce:"Quelle couleur obtient-on en mélangeant du bleu et du jaune ?",choix:["Du vert","Du rouge","Du violet"],reponse:0,explication:"Bleu + jaune = vert : c'est une couleur secondaire."},badr:{enonce:"Bleu + rouge donnent quelle couleur ?",choix:["L'orange","Le violet","Le vert"],reponse:1,explication:"Bleu + rouge = violet, couleur secondaire comme le vert et l'orange."}},
+{id:"MUS-09",othman:{enonce:"Que fait un sculpteur ?",choix:["Il taille des statues dans la pierre","Il chante des chansons","Il écrit des livres"],reponse:0,explication:"Le sculpteur taille, modèle ou sculpte des statues et des formes."},badr:{enonce:"Quelle matière est traditionnellement sculptée dans le monde arabe ?",choix:["Le plâtre et la pierre taillée","Le plastique","Le verre trempé"],reponse:0,explication:"L'art arabo-musulman excelle dans le plâtre sculpté (comme à l'Alhambra) et la calligraphie ornementale."}},
+{id:"MUS-10",othman:{enonce:"On frappe sur un tambour avec...",choix:["des baguettes ou des mains","un archet","des pinceaux"],reponse:0,explication:"On frappe le tambour avec des baguettes ou les mains : c'est un instrument à percussion."},badr:{enonce:"Comment appelle-t-on la famille d'instruments qu'on frappe ?",choix:["Les percussions","Les cordes","Les vents"],reponse:0,explication:"La famille des percussions : tambour, darbouka, xylophone, cymbales."}}
+]},
+{id:"tech",nom:"Technologie du quotidien",ico:"⚙️",questions:[
+{id:"TEC-01",othman:{enonce:"Quel objet sert à téléphoner et envoyer des messages ?",choix:["Le téléphone","Le four","La montre"],reponse:0,explication:"Le téléphone permet d'appeler et d'écrire à quelqu'un de loin."},badr:{enonce:"Que signifie « Wi-Fi » ?",choix:["Un réseau sans fil qui relie les appareils","Un type de batterie","Un écran tactile"],reponse:0,explication:"Le Wi-Fi relie les appareils entre eux par ondes radio, sans fil : c'est un réseau local sans fil."}},
+{id:"TEC-02",othman:{enonce:"Pour voir en pleine nuit, on utilise...",choix:["une lampe de poche","des lunettes de soleil","un parapluie"],reponse:0,explication:"La lampe de poche transforme l'énergie de sa pile en lumière."},badr:{enonce:"Comment s'appelle l'énergie stockée dans une pile ?",choix:["L'énergie chimique","L'énergie solaire","L'énergie du vent"],reponse:0,explication:"Dans une pile, une réaction chimique produit de l'électricité : c'est de l'énergie chimique."}},
+{id:"TEC-03",othman:{enonce:"La roue est une invention qui sert à...",choix:["rouler et transporter","voler","naviguer"],reponse:0,explication:"La roue, inventée il y a 5 000 ans, permet aux voitures et charrettes de rouler."},badr:{enonce:"Quand la roue a-t-elle été inventée ?",choix:["Il y a environ 5 000 ans","Au XIXe siècle","En 1950"],reponse:0,explication:"La roue a été inventée en Mésopotamie vers 3500 av. J.-C., d'abord pour la poterie puis pour les charrettes."}},
+{id:"TEC-04",othman:{enonce:"Un ordinateur portable fonctionne avec...",choix:["une batterie rechargeable","du charbon","du vent"],reponse:0,explication:"La batterie stocke l'électricité pour utiliser l'ordinateur sans être branché."},badr:{enonce:"Que fait un ordinateur avec des données ?",choix:["Il les stocke, les lit et les calcule","Il les mange","Il les transforme en papier"],reponse:0,explication:"Un ordinateur stocke les données (mémoire), les lit et les traite selon des programmes."}},
+{id:"TEC-05",othman:{enonce:"Qu'est-ce qu'un robot ?",choix:["Une machine qui exécute des actions automatiques","Un animal","Une plante"],reponse:0,explication:"Un robot est une machine programmée pour faire des tâches à notre place, parfois toute seule."},badr:{enonce:"Comment un robot sait-il quoi faire ?",choix:["Il suit un programme installé dans sa mémoire","Il rêve","Il écoute la radio"],reponse:0,explication:"Un robot suit un programme : une suite d'instructions écrites par des humains."}},
+{id:"TEC-06",othman:{enonce:"Sur un bateau, pour avancer on utilise...",choix:["des voiles ou un moteur","des roues","un ascenseur"],reponse:0,explication:"Un bateau avance avec des voiles qui attrapent le vent ou avec un moteur."},badr:{enonce:"Quelle force pousse un voilier ?",choix:["La force du vent sur les voiles","La force des vagues","La force de gravité"],reponse:0,explication:"Le vent pousse les voiles et fait avancer le voilier ; on règle les voiles pour en profiter au mieux."}},
+{id:"TEC-07",othman:{enonce:"Un avion vole grâce à...",choix:["ses ailes et ses moteurs","ses roues","ses fenêtres"],reponse:0,explication:"Les ailes portent l'avion dans l'air et les moteurs le font avancer."},badr:{enonce:"Qu'est-ce qui sustente un avion dans l'air ?",choix:["La portance créée par ses ailes","Les moteurs seuls","Les hélices seules"],reponse:0,explication:"La forme des ailes crée une force de portance qui soulève l'avion : c'est la loi de Bernoulli."}},
+{id:"TEC-08",othman:{enonce:"Qu'est-ce qui permet de conserver les aliments au frais ?",choix:["Le réfrigérateur","La fenêtre","Le four"],reponse:0,explication:"Le réfrigérateur garde les aliments au froid pour qu'ils se conservent plus longtemps."},badr:{enonce:"À quelle température un réfrigérateur doit-il être réglé environ ?",choix:["Entre 0 et 4 °C","Entre 10 et 15 °C","Entre 20 et 25 °C"],reponse:0,explication:"Un frigo se règle entre 0 et 4 °C : assez froid pour ralentir les microbes."}},
+{id:"TEC-09",othman:{enonce:"Pour prendre une photo, on utilise...",choix:["un appareil photo","un miroir","un micro"],reponse:0,explication:"L'appareil photo capture la lumière pour en faire une image."},badr:{enonce:"Comment une photo numérique est-elle faite ?",choix:["Avec des pixels qui captent la lumière","Avec de la peinture","Avec du papier"],reponse:0,explication:"Le capteur de l'appareil est couvert de millions de pixels qui mesurent la lumière et forment l'image."}},
+{id:"TEC-10",othman:{enonce:"Quelle invention a permis de compter très vite ?",choix:["La calculatrice","Le crayon","Le stylo"],reponse:0,explication:"La calculatrice fait les calculs très vite à notre place."},badr:{enonce:"Comment appelle-t-on un calcul répété automatiquement par une machine ?",choix:["Un algorithme","Un texte","Un dessin"],reponse:0,explication:"Un algorithme est une suite d'étapes suivies par une machine pour résoudre un problème — mot qui vient du savant Al-Khwarizmi !"}}
+]}
+]};
 
-/* ============================ SVG (figurines) ============================ */
-const SVG={
- nimrod:`<svg viewBox="0 0 64 64"><path d="M14 20l-6-14 14 8zM50 20l6-14-14 8z" fill="#c9962b"/><path d="M12 24l4-12 10 8zM52 24l-4-12-10 8z" fill="#dfe9f5" stroke="#1b2f6b" stroke-width="2"/><ellipse cx="32" cy="36" rx="22" ry="20" fill="#e8f0fa" stroke="#1b2f6b" stroke-width="2.5"/><path d="M32 18l-6 10h12z" fill="#9fb8e0"/><circle cx="23" cy="34" r="3.5" fill="#2c7fd1"/><circle cx="41" cy="34" r="3.5" fill="#2c7fd1"/><ellipse cx="32" cy="45" rx="9" ry="7" fill="#fff" stroke="#1b2f6b" stroke-width="2"/><circle cx="32" cy="42" r="2.6" fill="#1b2f6b"/><g fill="#b9cdea"><circle cx="18" cy="46" r="2"/><circle cx="46" cy="46" r="2"/><circle cx="24" cy="52" r="2"/><circle cx="40" cy="52" r="2"/></g></svg>`,
- selene:`<svg viewBox="0 0 64 64"><path d="M2 20c12-8 16 0 16 14-8 0-14-4-16-14zM62 20c-12-8-16 0-16 14 8 0 14-4 16-14z" fill="#c9962b" stroke="#6b4a10" stroke-width="2"/><path d="M14 22l2-16 12 10zM50 22l-2-16-12 10z" fill="#3a2a6b" stroke="#c9962b" stroke-width="2"/><ellipse cx="32" cy="36" rx="19" ry="18" fill="#3a2a6b" stroke="#c9962b" stroke-width="2.5"/><circle cx="24" cy="33" r="4" fill="#f0d27a"/><circle cx="40" cy="33" r="4" fill="#f0d27a"/><path d="M24 29v8M40 29v8" stroke="#2a1d10" stroke-width="2"/><path d="M29 41h6l-3 4z" fill="#e58ea0"/><g fill="#f0d27a"><circle cx="18" cy="44" r="1.5"/><circle cx="46" cy="44" r="1.5"/><circle cx="32" cy="24" r="1.5"/><circle cx="25" cy="50" r="1.5"/><circle cx="39" cy="50" r="1.5"/></g></svg>`,
- biblio:`<svg viewBox="0 0 64 64"><path d="M6 62c0-22 12-30 26-30s26 8 26 30z" fill="#1b2f6b" stroke="#c9962b" stroke-width="2.5"/><circle cx="32" cy="24" r="12" fill="#f0d9b0" stroke="#6b4a10" stroke-width="2"/><path d="M20 28c2 18 22 18 24 0-4 8-20 8-24 0z" fill="#fff"/><path d="M18 20c2-12 26-12 28 0-6-4-22-4-28 0z" fill="#c9962b"/><circle cx="27" cy="23" r="2" fill="#2a1d10"/><circle cx="37" cy="23" r="2" fill="#2a1d10"/></svg>`,
- pion:(c)=>`<svg viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="22" ry="6" fill="#0005"/><circle cx="32" cy="50" r="18" fill="${c}" stroke="#c9962b" stroke-width="3"/></svg>`
-};
-function figurine(j){ // pion du joueur : base + lettre + familier
- const J=JOUEURS[j],fam=SVG[J.fam.toLowerCase()];
- return `<div class="pion" title="${J.titre}"><svg viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="24" ry="5" fill="#0005"/><circle cx="26" cy="38" r="18" fill="${J.couleur}" stroke="#c9962b" stroke-width="3"/><text x="26" y="46" font-size="24" font-weight="bold" fill="#f0d27a" text-anchor="middle" font-family="Georgia,serif">${J.lettre}</text><g transform="translate(36 10) scale(.45)">${fam.replace(/<svg[^>]*>|<\/svg>/g,"")}</g></svg></div>`;
-}
-
-/* ============================ SAUVEGARDE (base) ============================ */
-const CLE="alqamar_v1";
-function neuf(){return{actif:"badr",or:0,objets:[],etapes:{},opt:{son:true},collecte:{},sagesse:0,potions:0,parch:[],joueurs:{badr:{xp:0,grimoire:[]},othman:{xp:0,grimoire:[]}}}}
-function compl(o){o.opt=o.opt||{son:true};o.collecte=o.collecte||{};o.sagesse=o.sagesse|0;o.potions=o.potions|0;o.parch=o.parch||[];o.vu=o.vu||{};return o}
-function charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s&&s.joueurs)return compl(s);return neuf()}catch(e){return neuf()}}
-function sauver(){try{localStorage.setItem(CLE,JSON.stringify(E))}catch(e){}}
-let E=charger();
-let hero={x:0,y:4},verrou=false;
-
-/* ============================ SONS, NIVEAUX, EFFETS (itération 2) ============================ */
-let AC=null;
-function audio(){if(!E.opt.son)return null;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC}catch(e){return null}}
-function note(f,t0,d,type,vol){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+t0;o.type=type||"sine";o.frequency.value=f;
- g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||.15,t+.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+d+.05)}
-const SON={
- ok(){[784,988,1319].forEach((f,i)=>note(f,i*.09,.5,"triangle",.15))},   // cristal
- ko(){note(330,0,.35,"sine",.12);note(262,.15,.5,"sine",.1)},            // doux, jamais strident
- tour(){note(660,0,1.1,"sine",.14);note(1320,0,.9,"sine",.05)},          // cloche
- page(){note(220,0,.1,"sawtooth",.03);note(170,.05,.12,"sawtooth",.03)}, // page tournée
- victoire(){[523,659,784,1047].forEach((f,i)=>note(f,i*.14,.7,"triangle",.16))}
-};
-function majMute(){document.getElementById("mute").textContent=E.opt.son?"🔊":"🔇"}
-document.getElementById("mute").onclick=()=>{E.opt.son=!E.opt.son;sauver();majMute();if(E.opt.son)SON.ok()};
-majMute();
-function parler(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="fr-FR";u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
-const TITRES=["Écuyer","Chevalier","Sage","Légende d'Al-Qamar"],PALIER=30;
-function niveau(j){const xp=E.joueurs[j].xp,n=Math.floor(xp/PALIER)+1;return{n,titre:TITRES[Math.min(3,Math.floor((n-1)/2))],reste:xp%PALIER}}
-function gagnerXP(j,x){const a=niveau(j).n;E.joueurs[j].xp+=x;return niveau(j).n>a} // vrai si niveau gagné
-function etincelles(el){if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;const r=el.getBoundingClientRect();
- for(let i=0;i<16;i++){const s=document.createElement("i"),a=Math.random()*6.28,d=40+Math.random()*70;s.className="spark";
-  s.style.cssText=`left:${r.left+r.width/2}px;top:${r.top+r.height/2}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px`;document.body.appendChild(s);setTimeout(()=>s.remove(),900)}}
-function ecranTour(cb){const j=E.actif,J=JOUEURS[j];SON.tour();
- ecran(`<div class="carte tourcarte ${j}"><div class="portrait">${SVG[J.fam.toLowerCase()]}</div><h2>C'est ton tour, ${J.nom} !</h2><p class="texte">${J.titre} — ${J.fam} t'attend.</p><button id="go">Je suis prêt !</button></div>`);
- document.getElementById("go").onclick=cb}
-
-/* ============================ ILLUSTRATIONS (images des corrections) ============================ */
-const FL=c=>`<svg viewBox="0 0 90 60">${c}</svg>`,B3=(a,b,c)=>`<rect width="30" height="60" fill="${a}"/><rect x="30" width="30" height="60" fill="${b}"/><rect x="60" width="30" height="60" fill="${c}"/>`,H3=(a,b,c)=>`<rect width="90" height="20" fill="${a}"/><rect y="20" width="90" height="20" fill="${b}"/><rect y="40" width="90" height="20" fill="${c}"/>`;
-const ILLUS={
- japon:FL('<rect width="90" height="60" fill="#fff"/><circle cx="45" cy="30" r="17" fill="#bc002d"/>'),
- maroc:FL('<rect width="90" height="60" fill="#c1272d"/><path d="M45 13l7 26-22-16h30L38 39z" fill="none" stroke="#006233" stroke-width="2.5"/>'),
- italie:FL(B3("#009246","#fff","#ce2b37")),france:FL(B3("#0055a4","#fff","#ef4135")),belgique:FL(B3("#000","#fae042","#ed2939")),
- allemagne:FL(H3("#000","#dd0000","#ffce00")),
- danemark:FL('<rect width="90" height="60" fill="#c8102e"/><rect x="26" width="9" height="60" fill="#fff"/><rect y="25" width="90" height="10" fill="#fff"/>'),
- pologne:FL('<rect width="90" height="30" fill="#fff"/><rect y="30" width="90" height="30" fill="#dc143c"/>'),
- canada:FL('<rect width="90" height="60" fill="#fff"/><rect width="22" height="60" fill="#d52b1e"/><rect x="68" width="22" height="60" fill="#d52b1e"/><path d="M45 14l5 10 9-3-3 11 6 3-11 3v9h-12v-9l-11-3 6-3-3-11 9 3z" fill="#d52b1e"/>'),
- rose:`<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#f3e6c4" stroke="#c9962b" stroke-width="3"/><path d="M32 8l6 24-6 24-6-24z" fill="#8c1d2f"/><path d="M8 32l24-6 24 6-24 6z" fill="#1b2f6b" opacity=".75"/><g font-size="9" font-weight="bold" fill="#2a1d10" text-anchor="middle"><text x="32" y="8">N</text><text x="32" y="63">S</text><text x="5" y="35">O</text><text x="59" y="35">E</text></g></svg>`
-};
-
-/* ============================ MOTEUR DE QUESTIONS ============================ */
-const alea=n=>Math.floor(Math.random()*n);
-function melanger(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=alea(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
-function autreJoueur(){E.actif=E.actif==="badr"?"othman":"badr"}
-SON.corne=()=>{note(196,0,.6,"sawtooth",.1);note(262,.25,.8,"sawtooth",.1);note(330,.5,1,"sawtooth",.1)};
-
-// Enregistre la question dans le Grimoire du joueur ; renvoie vrai si niveau gagné.
-function noter(j,q,t,v,sa,bon){E.joueurs[j].grimoire.push({q:q.id,essai:E.joueurs[j].grimoire.length+1,trial:t.id,notion:t.notion,enonce:v.enonce,sa,bonne:v.libre?"(discussion libre)":v.choix[v.reponse],explication:v.explication,illus:v.illus||q.illus||null,ok:bon});
- const m=gagnerXP(j,bon?5+(E.objets.includes("Épée-Boussole")?1:0):2);sauver();return m}
-
-// Affiche UNE question. apres(bon) renvoie {label,go,txt?,auto?} : ce que fait le bouton de suite.
-function poserQ(q,t,j,prefix,apres){
- const v=q[j];
- if(v.libre){ // question ouverte : pas de bonne ou mauvaise réponse
-  ecran(`${prefix}<div class="carte"><h3>${t.scene}</h3><p class="nom">${JOUEURS[j].nom}, à toi de raconter</p><p class="texte">${v.enonce}</p><textarea id="lib" placeholder="Écris ici, ou raconte à voix haute…"></textarea><p class="texte">📖 ${v.explication}</p><button id="disc">Nous en avons discuté</button></div>`);
-  document.getElementById("disc").onclick=()=>{noter(j,q,t,v,document.getElementById("lib").value||"(discuté à voix haute)",true);apres(true).go()};return}
- const ordre=melanger(v.choix.map((_,i)=>i));
- ecran(`${prefix}<div class="carte"><h3>${t.scene}</h3><p class="nom">Question pour ${JOUEURS[j].nom}</p><p class="texte">${v.enonce} <button class="petit" id="lire">🔊</button></p>
-  <div class="choix" id="choix">${ordre.map((i,k)=>`<button data-i="${i}"><b>${"ABCD"[k]}</b>${v.choix[i]}</button>`).join("")}</div><div id="retour"></div></div>`);
- document.getElementById("lire").onclick=()=>parler(v.enonce);
- if(E.sagesse>0){document.getElementById("lire").insertAdjacentHTML("afterend",` <button class="petit" id="ind">💡 Indice (💎 ${E.sagesse})</button>`);
-  document.getElementById("ind").onclick=ev=>{const l=[...document.querySelectorAll("#choix button:not([disabled])")].filter(x=>+x.dataset.i!==v.reponse);if(!l.length||E.sagesse<1)return;
-   const x=l[alea(l.length)];x.disabled=true;x.classList.add("barre");E.sagesse--;sauver();ev.target.remove();toast("💎 Une mauvaise réponse est écartée",1.8)}}
- document.querySelectorAll("#choix button").forEach(b=>b.onclick=()=>{
-  const i=+b.dataset.i,bon=i===v.reponse;
-  document.querySelectorAll("#choix button").forEach(x=>{x.disabled=true;if(+x.dataset.i===v.reponse)x.classList.add("bon")});
-  if(!bon){b.classList.add("mauvais");document.getElementById("choix").closest(".carte").classList.add("tremble");SON.ko()}else{SON.ok();etincelles(b)}
-  const mont=noter(j,q,t,v,v.choix[i],bon),r=apres(bon);
-  document.getElementById("retour").innerHTML=`<div class="retour ${bon?"ok":"ko"}"><b>${bon?"✨ Étincelle ravivée !":"L'Encre Noire s'agite…"}</b><br>${bon?"":COUP_DUR[alea(COUP_DUR.length)]+"<br>"}${mont?`🎉 <b>Niveau ${niveau(j).n} : ${niveau(j).titre} !</b><br>`:""}<i>${JOUEURS[j].fam} : « ${bon?"Bravo, on avance !":"On réessaie ensemble !"} »</i><br>📖 ${bon?"":"<b>Leçon : </b>"}${v.explication}${v.astuce?`<br>💡 <i>${v.astuce}</i>`:""}${(v.illus||q.illus)?`<div class="illus">${ILLUS[v.illus||q.illus]||""}</div>`:""}${r.txt?`<br><b>${r.txt}</b>`:""}</div><button id="suite">${r.label}</button>`;
-  let fait=false;const go=()=>{if(fait)return;fait=true;r.go()};
-  document.getElementById("suite").onclick=go;if(r.auto)setTimeout(go,r.auto);
- });
-}
-
-// Épreuve : 3 réussites tirées d'une réserve de 6 questions (notions ratées d'abord, puis jamais vues). Les erreurs deviennent une leçon.
-function lancerEpreuve(id,fin){
- const t=trial(id),pool=t.questions.map(q=>({q,ok:false,vu:false})),need=Math.min(3,pool.length),rates=[];
- let bonnes=0,erreurs=0,derniere=null,pardon=false,libreFait=false;
- const libre=p=>p.q.badr.libre||p.q.othman.libre;
- function fini(){const m=erreurs===0?"or":erreurs===1?"argent":"bronze";rates.length?lecon(rates,()=>fin(m)):fin(m)}
- function suivante(){
-  if(bonnes>=need)return fini();
-  let c=pool.filter(p=>!p.ok&&p.q.id!==derniere);if(!c.length)c=pool.filter(p=>!p.ok);
-  if(!libreFait){const f=c.filter(libre);if(f.length)c=f}else{const nl=c.filter(p=>!libre(p));if(nl.length)c=nl}
-  const vus=new Set(E.joueurs[E.actif].grimoire.map(e=>e.q)),rv=revoir(E.actif),nv=c.filter(p=>!p.vu);
-  const tier=[nv.filter(p=>rv.includes(p.q.id)),nv.filter(p=>!vus.has(p.q.id)),nv,c].find(a=>a.length);
-  const p=tier[alea(tier.length)];p.vu=true;derniere=p.q.id;if(libre(p))libreFait=true;
-  poserQ(p.q,t,E.actif,hud(1),bon=>{if(bon){p.ok=true;bonnes++}else{rates.push({j:E.actif,q:p.q,v:p.q[E.actif]});if(E.objets.includes("Cape-Lune")&&!pardon)pardon=true;else erreurs++}
-   return{label:bonnes>=need?"Terminer l'épreuve":"Question suivante",go:()=>{autreJoueur();sauver();bonnes>=need?suivante():ecranTour(suivante)}}});
+/* ======== SECTION MOTEUR DE QUESTIONS ======== */
+const MOTEUR={
+ joueurActif:"othman",
+ version(q){return q[this.joueurActif]||q.othman},
+ /* Choisit une question : priorité aux notions échouées (révision), sinon la première question non encore réussie de la discipline. */
+ choisir(discId){
+  const disc=BANQUE.disciplines.find(d=>d.id===discId);
+  const st=E.joueurs[this.joueurActif];
+  const aRevoir=disc.questions.filter(q=>{const t=st.progression[q.id];return t&&t.echecs>0&&!t.maitrise});
+  if(aRevoir.length){const q=aRevoir[Math.floor(Math.random()*aRevoir.length)];return {q,revision:true}}
+  const neuve=disc.questions.find(q=>!st.progression[q.id]);
+  if(neuve)return {q:neuve,revision:false};
+  return {q:disc.questions[Math.floor(Math.random()*disc.questions.length)],revision:false};
  }
- suivante();
-}
-// Leçon de l'Encre : l'échec devient un savoir (corrigé, illustré, +3 XP, et la notion revient en priorité).
-function lecon(rates,suite){
- SON.page();
- ecran(`${hud(1)}<div class="carte"><h2>📖 Leçon de l'Encre</h2><p class="texte">Une erreur comprise est un savoir gagné. Ces notions reviendront en priorité dans vos Grimoires.</p>${rates.map(r=>{const v=r.v,ill=v.illus||r.q.illus;return `<div class="entree ko"><b>${JOUEURS[r.j].nom} — ${v.enonce}</b><br>✅ ${v.choix[v.reponse]}<br>📖 ${v.explication}${v.astuce?`<br>💡 ${v.astuce}`:""}${ill?`<div class="illus">${ILLUS[ill]||""}</div>`:""}</div>`}).join("")}<p class="texte">🎓 +3 XP par leçon comprise</p><button id="ok">J'ai compris !</button></div>`);
- document.getElementById("ok").onclick=()=>{rates.forEach(r=>gagnerXP(r.j,3));E.lecons=(E.lecons|0)+rates.length;sauver();SON.ok();verifierDefis();suite()};
-}
-
-// Concours chronométré : chaque question est posée aux DEUX frères (6 questions), 60 s, chronomètre désactivable.
-function lancerConcours(id,fin){
- const t=trial(id),L=[];melanger(t.questions).slice(0,3).forEach(q=>["badr","othman"].forEach(j=>L.push({q,j})));
- const chrono=E.opt.chrono!==false;let i=0,bonnes=0,reste=60,tm=null,fini=false;
- const aff=()=>{const c=document.getElementById("chrono");if(c)c.textContent=reste};
- const stopC=()=>{if(tm){clearInterval(tm);tm=null;const c=document.getElementById("chrono");if(c)c.textContent="⏸ "+reste}};
- const startC=()=>{if(!chrono||tm||fini)return;tm=setInterval(()=>{reste--;aff();if(reste<=0)clore()},1000)};
- const clore=()=>{if(fini)return;fini=true;stopC();fin(bonnes,L.length)};
- function suiv(){
-  if(fini)return;if(i>=L.length||(chrono&&reste<=0))return clore();
-  const {q,j}=L[i++];E.actif=j;
-  poserQ(q,t,j,`${hud(1)}<div class="hud"><div class="tour">${chrono?`⏱️ <span id="chrono">${reste}</span> s`:"Sans chronomètre"} · question ${i}/${L.length}</div></div>`,bon=>{if(bon)bonnes++;stopC();return{label:"Suite",auto:1100,go:()=>{startC();suiv()}}});
- }
- startC();
- SON.corne();suiv();
-}
-
-// Duel (version minimale) : 3 manches, un frère à chaque manche ; le Pion d'Encre a 2 cœurs, l'équipe 3.
-function lancerDuel(id,fin){
- const t=trial(id);let pvP,pvN,m,ordre;
- const coeurs=(n,max,c)=>c.repeat(Math.max(0,n))+"🖤".repeat(max-Math.max(0,n));
- const ent=()=>{const j=E.actif;return `<div class="carte duel"><h3>⚔️ ${t.scene} — manche ${m+1}/3</h3><div class="arene"><div class="camp"><div class="pionD">${figurine(j)}</div>${JOUEURS[j].nom}<br>${coeurs(pvP,3,"❤️")}</div><div class="vs">VS</div><div class="camp"><div class="pionD">${SVG.encre}</div>Pion d'Encre<br>${coeurs(pvN,2,"💜")}</div></div></div>`};
- function debut(){pvP=3;pvN=2;m=0;ordre=melanger(t.questions);SON.corne();manche()}
- function manche(){
-  if(m>=3||pvN<=0||pvP<=0)return bilan();
-  ecran(`${hud(1)}${ent()}<div class="carte"><p class="texte">Choisis ton action, puis réponds à la question pour la réussir :</p><div class="choix"><button data-a="att">🗡️ Attaquer — blesse le Pion</button><button data-a="def">🛡️ Défendre — soigne un cœur</button><button data-a="esq">💨 Esquiver — évite la riposte</button>${E.potions>0&&pvP<3?`<button id="pot">🧪 Boire une potion : +1 cœur (×${E.potions})</button>`:""}</div></div>`);
-  document.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>question(b.dataset.a));const pb=document.getElementById("pot");if(pb)pb.onclick=()=>{E.potions--;pvP++;sauver();SON.ok();manche()};
- }
- function question(a){
-  poserQ(ordre[m],t,E.actif,`${hud(1)}${ent()}`,bon=>{
-   let txt;
-   if(bon){if(a==="att"){pvN--;txt="Ton coup touche le Pion d'Encre !"}else if(a==="def"){pvP=Math.min(3,pvP+1);txt="Ton bouclier t'abrite et te soigne."}else txt="Tu esquives en un éclair !"}
-   else txt="Ton action échoue, l'Encre Noire s'agite.";
-   if(pvN>0&&!(bon&&a==="esq")){pvP--;txt+=" Le Pion riposte : un cœur s'éteint."}
-   return{txt,label:"Manche suivante",go:()=>{m++;autreJoueur();sauver();(pvN<=0||m>=3||pvP<=0)?bilan():ecranTour(manche)}}});
- }
- function bilan(){
-  if(pvN<=0)return fin(pvP>=2?"or":pvP===1?"argent":"bronze");
-  ecran(`${hud(1)}${ent()}<div class="carte"><h2>Repli stratégique</h2><p class="texte">Le Pion d'Encre recule dans un tourbillon, mais il se reforme déjà. Reprenez votre souffle : l'Encre Noire n'est jamais invincible face à deux frères unis.</p><button id="retry">Retenter le duel</button></div>`);
-  document.getElementById("retry").onclick=debut;
- }
- debut();
-}
-
-/* ============================ GRIMOIRE ============================ */
-// (Itération 2 : écran complet. Ici, on enregistre déjà chaque question dans E.joueurs[j].grimoire.)
-const pages=j=>E.joueurs[j].grimoire.length;
-function revoir(j){const m={};E.joueurs[j].grimoire.forEach(e=>m[e.q]=e.ok);return Object.keys(m).filter(k=>!m[k])}
-function maitrisees(j){const m={};E.joueurs[j].grimoire.forEach(e=>m[e.q]=e.ok);return Object.values(m).filter(Boolean).length}
-const totalQ=()=>BANQUE.trials.reduce((n,t)=>n+t.questions.length,0);
-function ouvrirGrimoire(j){
- SON.page();j=j||E.actif;const g=E.joueurs[j].grimoire,rv=revoir(j),pct=Math.round(100*maitrisees(j)/totalQ());
- const med={or:"🥇",argent:"🥈",bronze:"🥉"};
- let h=`<div class="onglets">${Object.keys(JOUEURS).map(k=>`<button class="${k===j?"sel":""}" onclick="ouvrirGrimoire('${k}')">📖 Grimoire de ${JOUEURS[k].nom}</button>`).join("")}</div>
- <div class="carte"><h2>Le Grand Grimoire de ${JOUEURS[j].titre}</h2>
- <p class="texte">📜 ${g.length} page(s) écrite(s) · ✨ ${maitrisees(j)} / ${totalQ()} savoirs maîtrisés · 🔁 ${rv.length} à revoir</p>
- <div class="jauge"><i style="width:${pct}%"></i></div><p>Complétion : ${pct} %</p>`;
- if(!g.length)h+=`<p class="texte">Ton Grimoire est vide. Chaque question répondue y écrira une page.</p>`;
- BANQUE.trials.forEach(t=>{const es=g.filter(e=>e.trial===t.id);if(!es.length)return;
-  const aR=es.some(e=>rv.includes(e.q));
-  h+=`<div class="epreuve"><h3>${t.scene} ${med[E.etapes[t.id]]||""} ${aR?'<span class="revoir">à revoir</span>':""}</h3><div>Notion : ${t.notion}</div>`+
-  es.map(e=>`<div class="entree ${e.ok?"ok":"ko"}"><b>${e.ok?"✅":"❌"} ${e.enonce}</b><br>Ta réponse : ${e.sa}${e.ok?"":`<br>Bonne réponse : ${e.bonne}`}<br>📖 ${e.explication}${e.illus?`<div class="illus">${ILLUS[e.illus]||""}</div>`:""}</div>`).join("")+`</div>`});
- ecran(h+`</div><div class="pagination"><button class="petit" id="r">✖ Fermer</button>`);
- document.getElementById("r").onclick=fermerModale;
-}
-function ecranSauvegarde(){
- const code=btoa(unescape(encodeURIComponent(JSON.stringify(E))));
- ecran(`<div class="carte"><h2>🔑 Code de sauvegarde</h2><p class="texte">Copie ce code et garde-le : il contient toute la partie.</p>
- <textarea id="code" readonly>${code}</textarea><h3>Restaurer une partie</h3><textarea id="coll" placeholder="Colle ton code ici"></textarea>
- <p><button id="rest">Restaurer</button> <button class="petit" id="r">← Retour</button></p><p id="msg" class="texte"></p></div>`);
- document.getElementById("code").onclick=e=>e.target.select();
- document.getElementById("r").onclick=accueil;
- document.getElementById("rest").onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob(document.getElementById("coll").value.trim()))));
-  if(!o.joueurs||!o.joueurs.badr||!o.joueurs.othman)throw 0;E=compl(o);sauver();accueil()}catch(e){document.getElementById("msg").textContent="Code invalide : vérifie que tu l'as copié en entier."}};
-}
-
-/* ============================ COMBAT ============================ */
-// (Itération 3)
-/* ============================ ÉCONOMIE ============================ */
-// (Itération 4)
-
-/* ============================ INTERFACE ============================ */
-function ouvrirModale(html){fermerModale();const m=document.createElement("div");m.id="modale";m.innerHTML=`<div class="carte">${html}</div>`;m.onclick=e=>{if(e.target===m)fermerModale()};document.body.appendChild(m)}
-function fermerModale(){const m=document.getElementById("modale");if(m)m.remove()}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")fermerModale()});
-function ecran(h){const a=document.getElementById("app");a.classList.toggle("nofade",sansFondu);sansFondu=false;a.innerHTML=h;window.scrollTo(0,0)}
-function hud(q){const j=E.actif,nv=niveau(j);
- return `<div class="hud"><div class="tour ${j}"><span class="mini">${SVG[JOUEURS[j].fam.toLowerCase()]}</span> C'est le tour de ${JOUEURS[j].nom}</div>
- <div class="niv">⭐ Niv. ${nv.n} · ${nv.titre}<div class="jauge petitej"><i style="width:${Math.round(100*nv.reste/PALIER)}%"></i></div></div>
- <div class="sac"><span>🪙 ${E.or}</span><span>💎 ${E.sagesse}</span><span>🧪 ${E.potions}</span><span>🧭 ${E.objets.length}</span>${q?"":`<button class="petit" onclick="ecranQuete()">📜 Quête</button>`} <button class="petit" onclick="ecranSac()">🎒 Sac</button> <button class="petit" onclick="ouvrirGrimoire()">📖 Grimoire</button></div></div>`}
-function dialogue(lignes,fin){
- const L=[];lignes.forEach(l=>{const ph=l.texte.match(/[^.!?…]+[.!?…]+\s*|[^.!?…]+$/g)||[l.texte];for(let k=0;k<ph.length;k+=2)L.push({...l,texte:ph.slice(k,k+2).join("").trim()})}); // 2 phrases max par page
- let i=0,timer=null;
- (function aff(){const l=L[i];
-  ecran(`<div class="carte"><div class="dialogue"><div class="portrait">${SVG[l.img]}</div><div><div class="nom">${l.qui}</div><p class="texte" id="tx"></p></div></div>
-  <button id="ok">${i<L.length-1?"Suite":"C'est parti !"}</button> <button class="petit" id="lis">🔊 Lire</button></div>`);
-  const tx=document.getElementById("tx");let n=0,fait=false;
-  const tout=()=>{clearInterval(timer);tx.textContent=l.texte;fait=true};
-  if(matchMedia("(prefers-reduced-motion:reduce)").matches)tout();else timer=setInterval(()=>{n++;tx.textContent=l.texte.slice(0,n);if(n>=l.texte.length)tout()},22);
-  document.getElementById("lis").onclick=()=>parler(l.texte);
-  document.getElementById("ok").onclick=()=>{if(!fait){tout();return}try{speechSynthesis.cancel()}catch(e){}SON.page();i++;i<L.length?aff():fin()};
- })();
-}
-/* ============================ SCÈNES DE L'ACTE I ============================ */
-const COL=7,LIG=5;
-let sceneActive=null,enCours=false,sansFondu=false,presPNJ=false;
-const persoSVG=(robe,chap)=>`<svg viewBox="0 0 64 64"><path d="M6 62c0-22 12-30 26-30s26 8 26 30z" fill="${robe}" stroke="#c9962b" stroke-width="2.5"/><circle cx="32" cy="24" r="12" fill="#f0d9b0" stroke="#6b4a10" stroke-width="2"/><path d="M18 20c2-12 26-12 28 0-6-4-22-4-28 0z" fill="${chap}"/><circle cx="27" cy="23" r="2" fill="#2a1d10"/><circle cx="37" cy="23" r="2" fill="#2a1d10"/><path d="M27 30q5 4 10 0" stroke="#2a1d10" fill="none" stroke-width="2"/></svg>`;
-Object.assign(SVG,{
- marchand:persoSVG("#8c1d2f","#2c4a9e"),gardien:persoSVG("#2e5d3a","#c9962b"),
- porte:`<svg viewBox="0 0 64 64"><path d="M12 62V26a20 20 0 0 1 40 0v36z" fill="#2c4a9e" stroke="#c9962b" stroke-width="3"/><path d="M32 8v54" stroke="#c9962b" stroke-width="2"/><circle cx="26" cy="38" r="2.5" fill="#f0d27a"/><circle cx="38" cy="38" r="2.5" fill="#f0d27a"/><path d="M22 24q10-10 20 0" stroke="#f0d27a" fill="none" stroke-width="2"/></svg>`,
- encre:`<svg viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="5" fill="#0005"/><path d="M32 6c14 16 20 26 20 36a20 20 0 0 1-40 0c0-10 6-20 20-36z" fill="#1a1030" stroke="#6b3fa0" stroke-width="3"/><circle cx="25" cy="40" r="4" fill="#f0d27a"/><circle cx="39" cy="40" r="4" fill="#f0d27a"/><path d="M24 50q8 5 16 0" stroke="#6b3fa0" fill="none" stroke-width="2.5"/></svg>`,
- panneau:`<svg viewBox="0 0 64 64"><rect x="29" y="14" width="6" height="48" fill="#6b4a10"/><path d="M8 12h40l8 8-8 8H8z" fill="#9a9a9a" stroke="#c9962b" stroke-width="2.5"/><path d="M14 20h28" stroke="#555" stroke-width="3"/></svg>`,
- feu:`<svg viewBox="0 0 64 64"><path d="M10 60l44-12M10 48l44 12" stroke="#6b4a10" stroke-width="5"/><path d="M32 8c10 12 18 20 14 34-3 8-25 8-28 0-4-14 8-18 14-34z" fill="#e8741f" stroke="#c9962b" stroke-width="2"/><path d="M32 28c6 8 8 12 5 18-2 4-12 4-14 0-2-6 4-10 9-18z" fill="#f0d27a"/></svg>`
-});
-// Une carte par scène : couleurs du sol + décor (cases [x,y,emoji])
-const ICO={
- tour:`<svg viewBox="0 0 40 40"><path d="M10 38V14h20v24z" fill="#d9b86c" stroke="#8a6d2f" stroke-width="2"/><path d="M8 14h24l-4-6h-4v4h-4V8h-4v4h-4V8h-4z" fill="#c9962b" stroke="#8a6d2f" stroke-width="1.5"/><path d="M17 38v-10a3 3 0 0 1 6 0v10z" fill="#1b2f6b"/><circle cx="20" cy="20" r="3" fill="#1b2f6b"/></svg>`,
- arbre:`<svg viewBox="0 0 40 40"><rect x="18" y="26" width="4" height="12" fill="#6b4a10"/><circle cx="20" cy="18" r="11" fill="#3d7a46" stroke="#2a5a33" stroke-width="2"/><circle cx="15" cy="15" r="4" fill="#5aa062"/></svg>`,
- etagere:`<svg viewBox="0 0 40 40"><rect x="6" y="4" width="28" height="34" fill="#6b4a10" stroke="#3a2a10" stroke-width="2"/><path d="M8 14h24M8 26h24" stroke="#3a2a10" stroke-width="2"/><rect x="10" y="6" width="4" height="8" fill="#8c1d2f"/><rect x="15" y="7" width="4" height="7" fill="#2c4a9e"/><rect x="20" y="6" width="4" height="8" fill="#c9962b"/><rect x="25" y="8" width="4" height="6" fill="#2e7d32"/><rect x="10" y="18" width="5" height="8" fill="#2c4a9e"/><rect x="16" y="17" width="4" height="9" fill="#8c1d2f"/><rect x="22" y="18" width="5" height="8" fill="#c9962b"/><rect x="11" y="30" width="5" height="8" fill="#c9962b"/><rect x="18" y="29" width="4" height="9" fill="#2e7d32"/><rect x="24" y="30" width="5" height="8" fill="#8c1d2f"/></svg>`,
- vague:`<svg viewBox="0 0 40 40"><path d="M2 16q6-8 12 0t12 0 12 0M2 28q6-8 12 0t12 0 12 0" fill="none" stroke="#2c7fd1" stroke-width="4" stroke-linecap="round"/></svg>`,
- pont:`<svg viewBox="0 0 40 40"><path d="M0 20h40v8H0z" fill="#b08a4a" stroke="#6b4a10" stroke-width="2"/><path d="M4 20v-6M14 20v-6M26 20v-6M36 20v-6M2 14h36" stroke="#6b4a10" stroke-width="2"/></svg>`,
- montagne:`<svg viewBox="0 0 40 40"><path d="M2 36L16 8l8 14 6-8 8 22z" fill="#8a7a5a" stroke="#5a4a2a" stroke-width="2"/><path d="M16 8l-4 8 4-2 4 2z" fill="#fff"/></svg>`,
- or:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="#f0d27a" stroke="#a8771a" stroke-width="3"/><path d="M20 12l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z" fill="#c9962b"/></svg>`,
- sagesse:`<svg viewBox="0 0 40 40"><path d="M20 6l12 8-12 22L8 14z" fill="#4fc3f7" stroke="#1b2f6b" stroke-width="2.5"/><path d="M8 14h24M14 14l6 22 6-22" stroke="#1b2f6b" stroke-width="1.5" fill="none"/></svg>`,
- potion:`<svg viewBox="0 0 40 40"><rect x="16" y="4" width="8" height="8" fill="#c9962b"/><path d="M16 12v6L8 30a6 6 0 0 0 5 8h14a6 6 0 0 0 5-8l-8-12v-6z" fill="#e0405a" stroke="#6b1a2a" stroke-width="2.5"/><path d="M12 28h16" stroke="#fff8" stroke-width="3"/></svg>`,
- parchemin:`<svg viewBox="0 0 40 40"><path d="M8 8h24v24H8z" fill="#f3e6c4" stroke="#8a6d2f" stroke-width="2"/><rect x="5" y="5" width="6" height="30" rx="3" fill="#c9962b"/><path d="M15 15h14M15 21h14M15 27h9" stroke="#8c1d2f" stroke-width="2"/></svg>`,
- boussole:`<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#f0d27a" stroke="#8a6d2f" stroke-width="3"/><path d="M20 6l4 14-4 14-4-14z" fill="#8c1d2f"/><path d="M6 20l14-4 14 4-14 4z" fill="#1b2f6b" opacity=".6"/></svg>`,
- epee:`<svg viewBox="0 0 40 40"><path d="M30 4l6 6-18 18-6-6z" fill="#dfe9f5" stroke="#1b2f6b" stroke-width="2"/><path d="M10 24l6 6M8 32l-4 4" stroke="#c9962b" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="16" r="3" fill="#8c1d2f"/></svg>`,
- cape:`<svg viewBox="0 0 40 40"><path d="M10 6h20l6 30H4z" fill="#1b2f6b" stroke="#c9962b" stroke-width="2.5"/><path d="M26 14a8 8 0 1 0 0 10 6 6 0 1 1 0-10z" fill="#f0d27a"/></svg>`,
- etincelle:`<svg viewBox="0 0 40 40"><path d="M20 3l4 13 13 4-13 4-4 13-4-13-13-4 13-4z" fill="#f0d27a" stroke="#a8771a" stroke-width="2"/></svg>`
 };
-// Objets d'aventure : chacun a un effet réel dans le jeu.
-const OBJ={
- "Boussole-Rose":{ic:"boussole",u:"fait scintiller le chemin vers le prochain personnage sur la carte."},
- "Épée-Boussole":{ic:"epee",u:"+1 XP à chaque bonne réponse."},
- "Cape-Lune":{ic:"cape",u:"pardonne ta première erreur à chaque épreuve (la médaille ne baisse pas)."},
- "Étincelle de synthèse":{ic:"etincelle",u:"cadeau du Conseil : 3 Pièces de Sagesse offertes."}};
-const ANEC=["Au XIIe siècle, le géographe Al-Idrissi, né à Ceuta, dessina une immense carte du monde pour le roi Roger II de Sicile.",
- "Les plus anciennes cartes connues sont gravées sur des tablettes d'argile en Mésopotamie.",
- "La boussole a été inventée en Chine, puis adoptée par les navigateurs arabes et européens.",
- "Le mot « algèbre » vient de l'arabe al-jabr : il nous a été transmis par les savants du monde arabe.",
- "Le Sahara est presque aussi grand que les États-Unis.",
- "La Belgique a trois langues officielles : le néerlandais, le français et l'allemand."];
-// d = décor [x,y,icône] ; items = trésors à ramasser [x,y,type(,n° de parchemin)]
-const DECORS={
- citadelle:{nom:"La Citadelle du Croissant",c1:"#e6d3a3",c2:"#ecd9a8",d:[[0,0,"tour"],[2,0,"tour"],[4,0,"tour"],[6,4,"arbre"],[2,3,"arbre"]],
-  items:[[1,2,"or"],[6,2,"potion"],[3,4,"sagesse"],[6,0,"parchemin",0]]},
- atlas:{nom:"La Salle des Atlas",c1:"#d9c493",c2:"#e3d0a0",d:[[0,0,"etagere"],[1,0,"etagere"],[3,0,"etagere"],[4,0,"etagere"],[6,0,"etagere"],[0,2,"etagere"],[6,4,"etagere"]],
-  items:[[2,2,"or"],[5,3,"potion"],[2,4,"sagesse"],[1,1,"parchemin",1]]},
- pont:{nom:"Le Pont du Duel",c1:"#b9d0ea",c2:"#c8dbf0",d:[[0,2,"vague"],[1,2,"vague"],[2,2,"vague"],[3,2,"pont"],[4,2,"pont"],[6,2,"vague"],[0,0,"vague"],[6,4,"vague"]],
-  items:[[1,4,"or"],[3,3,"potion"],[5,0,"sagesse"],[2,0,"parchemin",2]]},
- route:{nom:"La Route de Bruxelles",c1:"#d7c98f",c2:"#e0d6a0",d:[[0,0,"arbre"],[2,0,"arbre"],[3,0,"arbre"],[6,0,"montagne"],[0,2,"arbre"],[2,1,"arbre"],[4,4,"arbre"],[6,4,"arbre"]],
-  items:[[1,2,"or"],[3,3,"or"],[5,2,"sagesse"],[6,3,"or"],[4,0,"sagesse"],[2,2,"parchemin",3],[0,3,"parchemin",4],[5,4,"parchemin",5]]}
+
+/* ======== SECTION GRIMOIRE ======== */
+/* Non négociable : toute question posée, la réponse du joueur, la bonne réponse et l'explication sont enregistrées dans le Grimoire personnel. */
+const GRIMOIRE={
+ consigner(joueur,qid,discNom,enonce,reponseJoueur,reponseCorrecte,explication,ok){
+  const st=E.joueurs[joueur];
+  st.grimoire.unshift({q:qid,disc:discNom,enonce:enonce,repJoueur:reponseJoueur,repCorrecte:reponseCorrecte,explication:explication,ok:ok,date:new Date().toLocaleDateString("fr-FR")});
+  if(st.grimoire.length>500)st.grimoire.length=500;
+  const p=st.progression[qid]||(st.progression[qid]={reussites:0,echecs:0,maitrise:false});
+  if(ok){p.reussites++;if(p.reussites>=2)p.maitrise=true}else{p.echecs++}
+ }
 };
-const TEX={citadelle:"linear-gradient(135deg,#0000 47%,#0002 50%,#0000 53%) 0 0/16px 16px",atlas:"repeating-linear-gradient(90deg,#0001 0 2px,#0000 2px 14px)",pont:"repeating-linear-gradient(0deg,#fff4 0 2px,#0000 2px 10px)",route:"radial-gradient(#0002 1.2px,#0000 1.7px) 0 0/10px 10px"};
-function horizon(sc){ // ciel d'Al-Qamar : étoiles, croissant, silhouette propre à chaque scène
- let sil="",st="";
- for(let i=0;i<14;i++){const h=14+((i*37)%5)*7,x=i*50;
-  sil+=sc==="citadelle"?`<rect x="${x}" y="${64-h}" width="34" height="${h}"/><path d="M${x} ${64-h}l17-14 17 14z"/>`:
-   sc==="atlas"?`<path d="M${x} 64v-${h}a17 17 0 0 1 34 0v${h}z"/>`:
-   sc==="pont"?`<path d="M${x} 64v-10a25 18 0 0 1 50 0v10z"/>`:`<path d="M${x-10} 64l30-${h+14} 30 ${h+14}z"/>`}
- for(let i=0;i<16;i++)st+=`<circle cx="${(i*97)%690+5}" cy="${(i*53)%34+4}" r="${1+i%2}" fill="#fff" opacity=".8"/>`;
- return `<div class="horizon" style="background:linear-gradient(${sc==="atlas"?"#3a2a1a,#6b4a10":"#0b1438,#2c4a9e"})"><svg viewBox="0 0 700 64" preserveAspectRatio="xMidYMax slice">${st}<path d="M640 8a18 18 0 1 0 0 36a14 14 0 1 1 0-36z" fill="#f0d27a"/><g fill="#101b44" opacity=".85">${sil}</g></svg></div>`}
-// Chaque type de décor, découvert une fois (marcher dessus), donne +3 XP et un savoir rangé dans le Sac.
-const FAIT={tour:"Du haut d'une tour de guet, on surveillait les routes et les caravanes à des kilomètres à la ronde.",
- arbre:"Le cèdre de l'Atlas, arbre emblématique du Maroc, peut vivre plus de mille ans.",
- etagere:"Fondée à Fès au IXe siècle, l'université Al Quaraouiyine abrite l'une des plus anciennes bibliothèques du monde.",
- vague:"Les océans couvrent environ 71 % de la surface de la Terre.",
- pont:"Les tout premiers ponts étaient de simples troncs d'arbre posés au-dessus d'un ruisseau.",
- montagne:"Le mont Toubkal, dans le Haut Atlas marocain, culmine à 4167 m : c'est le plus haut sommet d'Afrique du Nord."};
-function fouiller(e){const d=DECORS[e.scene].d.find(a=>a[0]===hero.x&&a[1]===hero.y);if(!d||E.collecte["fait:"+d[2]])return;
- E.collecte["fait:"+d[2]]=1;const j=E.actif;gagnerXP(j,3);SON.piece();toast(`🔎 ${FAIT[d[2]]}<br><b>+3 XP pour ${JOUEURS[j].nom}</b>`,5);sauver()}
-const cle=(sc,a)=>sc+":"+a[0]+"-"+a[1];
-SON.piece=()=>{note(988,0,.12,"square",.05);note(1319,.07,.22,"square",.05)};
-function toast(h,d){const t=document.createElement("div");t.className="toast";t.innerHTML=h;t.style.animationDuration=d+"s";document.body.appendChild(t);setTimeout(()=>t.remove(),d*1000)}
-function ramasser(){ // appelé à chaque pas : ramasse le trésor de la case où se tient le héros
- const e=courante();if(!e)return;const it=DECORS[e.scene].items.find(a=>a[0]===hero.x&&a[1]===hero.y&&!E.collecte[cle(e.scene,a)]);if(!it)return fouiller(e);
- E.collecte[cle(e.scene,it)]=1;const j=E.actif;SON.piece();
- if(it[2]==="or"){E.or+=3;toast("+3 🪙",2)}else if(it[2]==="sagesse"){E.sagesse++;toast("+1 💎 Pièce de Sagesse (indice)",2.2)}else if(it[2]==="potion"){E.potions++;toast("+1 🧪 Potion (duel)",2)}
- else{E.parch.push(it[3]);gagnerXP(j,8);toast(`📜 ${ANEC[it[3]]}<br><b>+8 XP pour ${JOUEURS[j].nom}</b>`,5.5)}
- sauver()}
-function ecranSac(){
- const tot=Object.values(DECORS).reduce((n,d)=>n+d.items.length,0)+Object.keys(FAIT).length;SON.page();
- ouvrirModale(`<h2>🎒 Le Sac de l'équipe</h2>
- <div class="entree">🪙 <b>${E.or}</b> pièces d'or — à échanger :<br><button class="petit" id="e1" ${E.or<20?"disabled":""}>20 🪙 → 1 💎</button> <button class="petit" id="e2" ${E.or<30?"disabled":""}>30 🪙 → 1 🧪</button></div>
- <div class="entree"><span class="ico">${ICO.sagesse}</span> <b>${E.sagesse}</b> Pièces de Sagesse — le bouton 💡 Indice écarte une mauvaise réponse.</div>
- <div class="entree"><span class="ico">${ICO.potion}</span> <b>${E.potions}</b> potions — redonnent un cœur pendant un duel.</div>
- ${Object.keys(OBJ).map(n=>{const a=E.objets.includes(n);return `<div class="entree ${a?"ok":""}"><span class="ico">${a?ICO[OBJ[n].ic]:"❔"}</span> <b>${a?n:"Objet à découvrir"}</b><br>${a?OBJ[n].u:"Continue l'aventure pour l'obtenir."}</div>`}).join("")}
- <div class="entree"><span class="ico">${ICO.parchemin}</span> Parchemins : <b>${E.parch.length}/${ANEC.length}</b>${E.parch.map(i=>`<br>• ${ANEC[i]}`).join("")}</div>
- <div class="entree"><span class="ico">${ICO.etagere}</span> Savoirs du décor : <b>${Object.keys(FAIT).filter(k=>E.collecte["fait:"+k]).length}/${Object.keys(FAIT).length}</b>${Object.keys(FAIT).filter(k=>E.collecte["fait:"+k]).map(k=>`<br>• ${FAIT[k]}`).join("")}</div>
- <p class="texte">🗺️ Trésors ramassés : ${Object.keys(E.collecte).length}/${tot}</p><button class="petit" id="r">✖ Fermer</button>`);
- document.getElementById("r").onclick=fermerModale;
- document.getElementById("e1").onclick=()=>{E.or-=20;E.sagesse++;sauver();SON.piece();ecranSac()};
- document.getElementById("e2").onclick=()=>{E.or-=30;E.potions++;sauver();SON.piece();ecranSac()};
-}
-(function(){let h='<svg width="100%" height="120">';for(let i=0;i<30;i++)h+=`<circle cx="${alea(100)}%" cy="${alea(110)}" r="${(1+Math.random()*1.5).toFixed(1)}" fill="#f0d27a" style="animation-delay:-${(Math.random()*3).toFixed(1)}s"/>`;
- h+='<svg x="86%" y="8" width="54" height="54" viewBox="0 0 70 70"><path d="M60 8A28 28 0 1 0 60 64A22 22 0 1 1 60 8z" fill="#f0d27a"/></svg></svg>';document.getElementById("ciel").innerHTML=h})();
-const D=(qui,img,texte)=>({qui,img,texte}),BI="Le Grand Bibliothécaire";
-// Narration de l'Acte I (les questions, elles, restent dans le JSON). x,y = place du personnage sur la carte.
-const ETAPES=[
-{id:"T01",scene:"citadelle",x:5,y:1,pnj:"biblio",obj:"Parle au Grand Bibliothécaire",or:15,objet:"Boussole-Rose",fin:"Serment prêté !",dial:[
- D(BI,"biblio","Le monde que vous croyez connaître n'est plus qu'un dessin pâle. Chaque pays, chaque ville, chaque histoire dort dans une Page-Pays volée par l'Encre Noire. Vous marcherez sur les routes du monde réel ; moi, je veillerai sur vos Grimoires. Badr, prends Nimrod : sa sagesse gèlera le doute. Othman, prends Selene : ses ailes porteront ta curiosité."),
- D("Nimrod (télépathie animale)","nimrod","Ma truffe sent encore l'odeur des gaufres et de la pluie. Là-bas, le souvenir résiste. Allons-y, et vite."),
- D(BI,"biblio","Prêtez le Serment des Cartographes : répondez juste à trois questions, et la Boussole-Rose vous guidera.")]},
-{id:"T02",scene:"atlas",x:5,y:1,pnj:"porte",obj:"Approche la Porte des Mots",or:10,fin:"La Porte des Mots s'ouvre !",dial:[
- D("La Porte des Mots","porte","Je m'ouvrais jadis à toutes les langues du monde. L'Encre Noire m'a rendue muette, et mes mots dorment."),
- D("Selene","selene","Les mots sont des clés, et chaque langue en ouvre une. Montrons-lui que nous les comprenons.")]},
-{id:"T03",scene:"pont",x:5,y:2,pnj:"encre",obj:"Affronte le Pion d'Encre",or:20,objet:"Épée-Boussole",fin:"Le Pion d'Encre se dissout en étincelles !",dial:[
- D("Le Pion d'Encre","encre","Nul ne franchit ce pont. Chaque savoir que vous croyez posséder, je l'efface."),
- D("Nimrod","nimrod","Ce n'est qu'un pion ! Un frère à chaque manche : ensemble, nous le renverserons.")]},
-{id:"T04",scene:"route",x:2,y:3,pnj:"panneau",obj:"Réveille le panneau gris (capitales)",or:10,fin:"Le panneau retrouve ses couleurs !",dial:[
- D("Panneau gris","panneau","L'Encre a effacé les noms des capitales. Redonnez-leur vie !")]},
-{id:"T05",scene:"route",x:4,y:1,pnj:"panneau",obj:"Réveille le panneau gris (monuments)",or:10,fin:"Les images du panneau reviennent !",dial:[
- D("Panneau gris","panneau","Les monuments du monde se sont effacés de mon image. Retrouvez à quel pays ils appartiennent.")]},
-{id:"T06",scene:"route",x:1,y:1,pnj:"marchand",obj:"Parle au marchand ambulant",or:10,objet:"Cape-Lune",fin:"Le marchand devient votre ami !",dial:[
- D("Le Marchand ambulant","marchand","Salaam, voyageurs ! Mes drapeaux ont perdu leurs couleurs. Aidez-moi à les reconnaître et je vous offrirai ma Cape-Lune.")]},
-{id:"T07",scene:"route",x:5,y:3,pnj:"marchand",obj:"Relève le Tour des Drapeaux",or:0,fin:"Le concours est terminé !",dial:[
- D("Le Marchand ambulant","marchand","Le Tour des Drapeaux ! Chacun de vous répond aux mêmes questions, en soixante secondes. Chaque bonne réponse vaut 5 pièces.")]},
-{id:"T08",scene:"route",x:3,y:2,pnj:"panneau",obj:"Calibre la Boussole-Rose",or:10,fin:"La Boussole retrouve le Nord !",dial:[
- D("Nimrod","nimrod","La Boussole-Rose s'affole : elle a perdu le Nord ! Aidons-la à retrouver ses repères.")]},
-{id:"T09",scene:"route",x:5,y:0,pnj:"panneau",obj:"Déplie la carte de la route",or:10,fin:"La carte de la route se déplie !",dial:[
- D("Selene","selene","Du haut du ciel, je vois fleuves, montagnes et mers. Mais la carte est encore pliée : lisez-la avec moi.")]},
-{id:"T10",scene:"route",x:1,y:3,pnj:"marchand",obj:"Marchande avec le marchand",or:10,fin:"Le marchand vous fait une réduction !",dial:[
- D("Le Marchand ambulant","marchand","Pour payer, il faut connaître les monnaies du monde. Prouvez-le, et je ferai un geste sur mes prix.")]},
-{id:"T11",scene:"route",x:6,y:1,pnj:"gardien",obj:"Parle au Gardien de la Cité",or:15,fin:"Le Gardien vous ouvre la voie !",dial:[
- D("Le Gardien de la Cité","gardien","Halte, voyageurs ! Voici les abords de Bruxelles, la première Page-Pays à restaurer. Dites-moi ce que vous savez de la Belgique.")]},
-{id:"T12",scene:"route",x:3,y:4,pnj:"feu",obj:"Rejoins le feu de camp",or:15,objet:"Étincelle de synthèse",fin:"Le Conseil du Feu de Camp est clos !",dial:[
- D("Nimrod","nimrod","Le feu crépite. C'est l'heure du Conseil : mettons en commun tout ce que nous avons appris."),
- D("Selene","selene","Il y aura une question pour discuter entre frères : il n'y a pas de mauvaise réponse.")]}
-];
-const CLIFF=[
- D("Le Gardien de la Cité","gardien","Voyageurs, voici la Grand-Place. Regardez : ses façades sont grises et ses pavés muets. L'Encre Noire y règne encore."),
- D("Nimrod","nimrod","Je sens la pluie, les gaufres… et quelque chose d'autre. Quelque chose qui nous attend."),
- D("Selene","selene","La Page-Pays de la Belgique n'est pas encore restaurée. Reposons-nous : demain, la bataille commence.")];
-const courante=()=>ETAPES.find(e=>!E.etapes[e.id]);
-const proche=e=>Math.abs(hero.x-e.x)+Math.abs(hero.y-e.y)<=1;
 
-const nbFait=()=>ETAPES.filter(x=>E.etapes[x.id]).length,nbMed=m=>Object.values(E.etapes).filter(x=>x===m).length;
-// Objectifs secondaires : chacun rapporte une récompense la première fois qu'il est atteint.
-const DEFIS=[
- {id:"tres",t:"Ramasser 10 trésors",n:()=>Object.keys(E.collecte).length,max:10,r:"💎 +1 Pièce de Sagesse",f:()=>{E.sagesse++}},
- {id:"savoirs",t:"Découvrir les 6 savoirs de décor",n:()=>Object.keys(FAIT).filter(k=>E.collecte["fait:"+k]).length,max:6,r:"🧪 +1 Potion",f:()=>{E.potions++}},
- {id:"parch",t:"Lire 4 parchemins",n:()=>E.parch.length,max:4,r:"🪙 +20 pièces",f:()=>{E.or+=20}},
- {id:"or3",t:"Gagner 3 médailles d'or",n:()=>nbMed("or"),max:3,r:"💎 +1 Pièce de Sagesse",f:()=>{E.sagesse++}},
- {id:"lecon",t:"Comprendre 5 erreurs (leçons lues)",n:()=>E.lecons|0,max:5,r:"💎 +2 Pièces de Sagesse",f:()=>{E.sagesse+=2}},
- {id:"niv",t:"Atteindre le niveau 3, chacun",n:()=>Math.min(niveau("badr").n,niveau("othman").n),max:3,r:"🪙 +25 pièces",f:()=>{E.or+=25}}];
-const nbDefis=()=>DEFIS.filter(d=>E.defis&&E.defis[d.id]).length;
-function verifierDefis(){E.defis=E.defis||{};DEFIS.forEach(d=>{if(!E.defis[d.id]&&d.n()>=d.max){E.defis[d.id]=1;d.f();SON.victoire();toast(`🏅 <b>Défi réussi :</b> ${d.t}<br>${d.r}`,4);sauver()}})}
-const CHAPITRES=()=>[...new Set(ETAPES.map(e=>e.scene))];
-function introQuete(){
- ecran(`<div class="carte"><h2>📜 La Quête de l'Atlas</h2>
- <p class="texte"><b>🏁 Objectif principal :</b> rejoindre <b>Bruxelles</b> et y restaurer la première Page-Pays de l'Atlas, en réussissant les 12 épreuves de l'Acte I.</p>
- <div class="entree">${CHAPITRES().map((c,i)=>`${i+1}. ${DECORS[c].nom} — ${ETAPES.filter(e=>e.scene===c).length} épreuve(s)`).join("<br>")}</div>
- <p class="texte"><b>⭐ Objectifs secondaires :</b></p><div class="entree">${DEFIS.map(d=>`• ${d.t} → ${d.r}`).join("<br>")}</div>
- <p class="texte"><b>🧭 Comment jouer :</b> déplacez-vous (clic ou flèches), parlez au personnage marqué ▼, répondez chacun votre tour. Une erreur n'est jamais perdue : elle devient une <b>leçon</b> et un savoir dans votre Grimoire.</p>
- <button id="go">Commencer l'aventure !</button></div>`);
- document.getElementById("go").onclick=()=>{E.intro=1;sauver();sceneCarte()}}
-function ecranQuete(){
- verifierDefis();const cur=courante();SON.page();
- ecran(`<div class="carte"><h2>📜 Journal de quête</h2><p class="texte"><b>🏁 Atteindre Bruxelles</b> — ${nbFait()}/${ETAPES.length} épreuves</p><div class="jauge"><i style="width:${Math.round(100*nbFait()/ETAPES.length)}%"></i></div>
- ${CHAPITRES().map(c=>{const l=ETAPES.filter(e=>e.scene===c),f=l.filter(e=>E.etapes[e.id]).length;return `<div class="entree ${f===l.length?"ok":""}">${f===l.length?"✅":cur&&cur.scene===c?"▶️":"⬜"} ${DECORS[c].nom} (${f}/${l.length})</div>`}).join("")}
- <p class="texte">🎯 ${cur?"Prochain objectif : <b>"+cur.obj+"</b>":"Acte I accompli !"}</p>
- <h3>⭐ Objectifs secondaires (${nbDefis()}/${DEFIS.length})</h3>${DEFIS.map(d=>{const ok=E.defis&&E.defis[d.id],n=Math.min(d.n(),d.max);return `<div class="defi ${ok?"ok":""}">${ok?"✅":"⬜"} ${d.t} <small>(${n}/${d.max}) → ${d.r}</small><div class="jauge petitej"><i style="width:${Math.round(100*n/d.max)}%"></i></div></div>`}).join("")}
- <p class="texte">🎓 Erreurs transformées en leçons : <b>${E.lecons|0}</b></p><button class="petit" id="r">← Retour</button></div>`);
- document.getElementById("r").onclick=accueil}
-const etapeScene=()=>ETAPES.find(x=>x.scene===sceneActive&&!E.etapes[x.id])||null;
-function indicePNJ(e){if(presPNJ)return;presPNJ=true;toast(`📍 Clique sur le personnage ▼ (ou touche Entrée) pour : <b>${e.obj}</b>`,3.5)}
-function sceneCarte(){
-enCours=false;verifierDefis();
- const nxt=courante();if(!sceneActive){if(!nxt)return ecranFin();sceneActive=nxt.scene}
- if(!E.vu[sceneActive]){E.vu[sceneActive]=1;sauver()}
- const e=etapeScene();
- if(!e||!proche(e))presPNJ=false;
- const piste=new Set();if(e&&E.objets.includes("Boussole-Rose")){let px=hero.x,py=hero.y,g=0;while(Math.abs(px-e.x)+Math.abs(py-e.y)>1&&g++<20){if(px<e.x)px++;else if(px>e.x)px--;else if(py<e.y)py++;else py--;piste.add(px+","+py)}}
- const dc=DECORS[sceneActive],liste=ETAPES.filter(x=>x.scene===sceneActive),fait=liste.filter(x=>E.etapes[x.id]).length,gris=(1-fait/liste.length).toFixed(2);
- const voy=CHAPITRES().map(c=>`<button class="petit ${c===sceneActive?"sel":""}" data-scene="${c}" ${E.vu[c]?"":"disabled"}>${E.vu[c]?"":"🔒 "}${DECORS[c].nom}</button>`).join(" ");
- let h=`${hud()}<div class="carte" style="margin-bottom:10px">🧭 Voyage : ${voy}<br><b>${dc.nom}</b> — 🎯 <b>${e?e.obj:(nxt?"Prochaine épreuve (autre scène) : "+nxt.obj:"Toutes les épreuves d'ici sont accomplies — fouillez les trésors !")}</b><div class="jauge petitej"><i style="width:${Math.round(100*nbFait()/ETAPES.length)}%"></i></div>🚩 Quête de Bruxelles : ${nbFait()}/${ETAPES.length} · ⭐ Défis ${nbDefis()}/${DEFIS.length}<br> <small>(clique ou flèches · marche sur les ✨ trésors et les décors qui brillent · clique sur le personnage ▼ pour lui parler)</small></div>${horizon(sceneActive)}<div class="plateau" id="plateau" style="--c1:${dc.c1};--c2:${dc.c2};--tex:${TEX[sceneActive]}">`;
- for(let y=0;y<LIG;y++)for(let x=0;x<COL;x++){
-  const isP=!!(e&&e.x===x&&e.y===y),d=dc.d.find(a=>a[0]===x&&a[1]===y),it=dc.items.find(a=>a[0]===x&&a[1]===y);let c="";
-  if(hero.x===x&&hero.y===y)c=figurine(E.actif);else if(isP)c=`<div class="pion">${SVG[e.pnj]}</div>`;else if(it&&!E.collecte[cle(sceneActive,it)])c=`<span class="item">${ICO[it[2]]}</span>`;else if(d)c=`<span class="deco ${E.collecte["fait:"+d[2]]?"":"neuf"}">${ICO[d[2]]}</span>`;
-  h+=`<div class="case ${isP?"pnj":""} ${piste.has(x+","+y)?"dest":""}" data-x="${x}" data-y="${y}"><i class="sol" style="filter:grayscale(${gris})"></i>${c}</div>`}
- ecran(h+`</div><div class="pagination"><button class="petit" id="accueil">⌂ Accueil</button></div>`);
- document.querySelectorAll(".case").forEach(c=>c.onclick=()=>{
-  const x=+c.dataset.x,y=+c.dataset.y;
-  if(e&&x===e.x&&y===e.y)return proche(e)?declencher(e):aller(x,y,true);
-  aller(x,y)});
- document.querySelectorAll("[data-scene]").forEach(b=>b.onclick=()=>{if(b.disabled||b.dataset.scene===sceneActive)return;sceneActive=b.dataset.scene;hero={x:0,y:4};presPNJ=false;sauver();sceneCarte()});
- document.getElementById("accueil").onclick=accueil;
-}
-function aller(tx,ty,parler){
- if(verrou||enCours)return;verrou=true;const e=etapeScene();
- const pas=setInterval(()=>{
-  if(hero.x<tx)hero.x++;else if(hero.x>tx)hero.x--;else if(hero.y<ty)hero.y++;else if(hero.y>ty)hero.y--;
-  ramasser();sansFondu=true;sceneCarte();
-  if(e&&proche(e))indicePNJ(e);else presPNJ=false;
-  if((hero.x===tx&&hero.y===ty)||(parler&&e&&proche(e))){clearInterval(pas);verrou=false;if(parler&&e&&proche(e))declencher(e)}
- },140);
-}
-document.addEventListener("keydown",ev=>{
- if(!document.getElementById("plateau")||verrou||enCours)return;
- const e=etapeScene();
- if((ev.key==="Enter"||ev.key===" ")&&e&&proche(e)){ev.preventDefault();return declencher(e)}
- const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[ev.key];
- if(!d)return;ev.preventDefault();
- hero.x=Math.max(0,Math.min(COL-1,hero.x+d[0]));hero.y=Math.max(0,Math.min(LIG-1,hero.y+d[1]));
- ramasser();if(e&&proche(e))indicePNJ(e);else presPNJ=false;
- sansFondu=true;sceneCarte();
-});
-function declencher(e){
- if(enCours)return;enCours=true;
- if(!trial(e.id)){ecran(`${hud(1)}<div class="carte"><h2>Banque incomplète</h2><p class="texte">⚠️ Cette épreuve n'est pas dans la banque chargée. La banque JSON n'a pas été chargée — retourne à l'accueil puis recharge-la.</p><button id="ok">Retour à la carte</button></div>`);document.getElementById("ok").onclick=sceneCarte;return}
- dialogue(e.dial,()=>{
-  if(e.type==="duel"||e.id==="T03")lancerDuel(e.id,m=>terminer(e,m));
-  else if(e.id==="T07")lancerConcours(e.id,(b,n)=>terminer(e,b===n?"or":b>=n/2?"argent":"bronze",5*b));
-  else lancerEpreuve(e.id,m=>terminer(e,m));
- });
-}
-function terminer(e,m,gain){
- E.etapes[e.id]=m;gain=gain==null?e.or:gain;E.or+=gain;if(m==="or")E.sagesse++;if(e.id==="T12")E.sagesse+=3;if(e.objet&&!E.objets.includes(e.objet))E.objets.push(e.objet);
- ["badr","othman"].forEach(j=>gagnerXP(j,10));sauver();SON.victoire();
- ecran(`${hud(1)}<div class="carte"><h2>${e.fin}</h2><div class="jauge"><i style="width:${Math.round(100*nbFait()/ETAPES.length)}%"></i></div><p class="texte">🏁 Quête de Bruxelles : ${nbFait()}/${ETAPES.length}${courante()?` — 🎯 prochain objectif : ${courante().obj}`:""}</p><div class="medaille">${{or:"🥇 Or",argent:"🥈 Argent",bronze:"🥉 Bronze"}[m]}</div>
- <p class="texte">🎁 +${gain} pièces d'or${e.objet?` · <span class="ico">${ICO[OBJ[e.objet].ic]}</span> <b>${e.objet}</b> — ${OBJ[e.objet].u}`:""} · ✨ +10 XP chacun${m==="or"?" · 💎 +1":""}${e.id==="T12"?" · 💎 +3":""}</p><button id="ok">${e.id==="T12"?"Au coin du feu…":"Continuer"}</button></div>`);
- document.getElementById("ok").onclick=e.id==="T12"?conseil:sceneCarte;
-}
-function conseil(){
+/* ======== SECTION COMBAT ======== */
+/* Combat tour par tour façon Pokémon : le Gardien de la Discipline lance une question ; bonne réponse = ton attaque réussit, mauvaise réponse = l'Encre Noire contre-attaque (jamais la faute de l'enfant). */
+const COMBAT={
+ etat:null,
+ commencer(discId){
+  const disc=BANQUE.disciplines.find(d=>d.id===discId);
+  const st=E.joueurs[MOTEUR.joueurActif];
+  const niv=this.niveau(st,discId);
+  this.etat={disc:discId,nom:disc.nom,ico:disc.ico,niv:niv,
+   herosPv:100+st.niveau*5,herosPvMax:100+st.niveau*5,
+   gardienPv:60+niv*15,gardienPvMax:60+niv*15,tour:"heros",fini:false};
+  SCENES.combat();
+ },
+ niveau(st,discId){
+  const disc=BANQUE.disciplines.find(d=>d.id===discId);
+  let n=1;
+  disc.questions.forEach(q=>{const p=st.progression[q.id];if(p&&p.maitrise)n++});
+  return Math.min(n,10);
+ },
+ /* Exécuté après chaque réponse : ok = attaque réussie, !ok = l'Encre Noire frappe. */
+ resoudre(ok){
+  const e=this.etat;if(!e||e.fini)return;
+  if(ok){e.gardienPv=Math.max(0,e.gardienPv-25+Math.round(Math.random()*10))}
+  else{e.herosPv=Math.max(0,e.herosPv-(15+Math.round(Math.random()*8)))}
+  if(e.gardienPv<=0){e.fini=true;e.victoire=true}
+  else if(e.herosPv<=0){e.fini=true;e.victoire=false}
+  SCENES.combat();
+ }
+};
 
- ecran(`<div class="carte tourcarte"><div class="braise">${SVG.feu}</div><h2>Le Conseil du Feu de Camp</h2><p class="texte">Ce que nous avons appris :</p>${BANQUE.trials.map(t=>`<div class="entree">${{or:"🥇",argent:"🥈",bronze:"🥉"}[E.etapes[t.id]]||"•"} ${t.notion}</div>`).join("")}<button id="ok">Continuer</button></div>`);
- document.getElementById("ok").onclick=()=>dialogue(CLIFF,ecranFin);
-}
-function statsJ(j){const g=E.joueurs[j].grimoire,ok=g.filter(x=>x.ok).length,nv=niveau(j);
- return `<div class="entree"><b>${JOUEURS[j].titre}</b><br>⭐ Niv. ${nv.n} · ${nv.titre} · ✨ ${E.joueurs[j].xp} XP<br>📖 ${g.length} questions · ✅ ${ok} justes (${g.length?Math.round(100*ok/g.length):0} %) · 🔁 ${revoir(j).length} à revoir</div>`}
-function ecranFin(){
-SON.victoire();const nb=m=>Object.values(E.etapes).filter(x=>x===m).length;
- ecran(`<div class="carte tourcarte"><h1>🏁 Acte I accompli !</h1><p class="texte"><b>Objectif atteint :</b> vous voici aux portes de Bruxelles, première Page-Pays à restaurer. L'Atlas est encore déchiré… <i>à suivre dans l'Acte II.</i></p><p class="texte">⭐ Objectifs secondaires : ${nbDefis()}/${DEFIS.length} · 🎓 ${E.lecons|0} erreurs transformées en leçons</p><div class="entree">${DEFIS.map(d=>`${E.defis&&E.defis[d.id]?"✅":"⬜"} ${d.t}`).join("<br>")}</div>
- <div class="medaille">🥇 ${nb("or")} · 🥈 ${nb("argent")} · 🥉 ${nb("bronze")}</div><p class="texte">🪙 ${E.or} pièces · 🧭 ${E.objets.join(", ")||"—"}</p>${statsJ("badr")}${statsJ("othman")}
- <p><button id="gr">📖 Grimoires</button> <button class="petit" id="ac">⌂ Accueil</button></p></div>`);
- document.getElementById("gr").onclick=()=>ouvrirGrimoire();document.getElementById("ac").onclick=accueil;
-}
+/* ======== SECTION ÉCONOMIE ======== */
+const ECO={
+ recompense(ok){
+  const st=E.joueurs[MOTEUR.joueurActif];
+  if(ok){st.or+=10;st.xp+=1;this.palier(st)}else{st.or+=2}
+ },
+ palier(st){
+  while(st.xp>=st.niveau*5){st.xp-=st.niveau*5;st.niveau++;st.rang=this.rang(st.niveau)}
+ },
+ rang(n){return n<3?"Écuyer":n<6?"Chevalier":n<10?"Sage":"Légende d'Al-Qamar"},
+ boutique:[
+  {id:"indice",nom:"Indice du Scribe",ico:"🔍",prix:15,desc:"Le Scribe raye une mauvaise réponse avant l'épreuve."},
+  {id:"soin",nom:"Fiole de miel",ico:"🍯",prix:20,desc:"Rend 40 points de vie au héros pendant un combat."},
+  {id:"talisman",nom:"Talisman d'endurance",ico:"🧿",prix:35,desc:"+20 points de vie maximum pour le prochain combat."}
+ ],
+ acheter(item){
+  const st=E.joueurs[MOTEUR.joueurActif];
+  if(st.or<item.prix)return false;
+  st.or-=item.prix;st.sac[item.id]=(st.sac[item.id]||0)+1;SAUVEGARDE.sauver();return true;
+ }
+};
 
-/* ============================ ACCUEIL ============================ */
-const txtChrono=()=>"⏱️ Chronomètre du concours : "+(E.opt.chrono===false?"désactivé":"activé");
-function accueil(){
+/* ======== SECTION SAUVEGARDE ======== */
+const CLE="alqamar-v2";
+const SAUVEGARDE={
+ defaut(){return{version:2,joueurActif:"othman",joueurs:{
+  othman:{nom:"Othman",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}},
+  badr:{nom:"Badr",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}}}}},
+ charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s&&s.version===2&&s.joueurs)return s}catch(e){}return this.defaut()},
+ sauver(){try{localStorage.setItem(CLE,JSON.stringify(E))}catch(e){}},
+ codeSecours(){return btoa(unescape(encodeURIComponent(JSON.stringify(E))))},
+ restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));if(o&&o.version===2&&o.joueurs){E=o;this.sauver();return true}}catch(e){}return false}
+};
+let E=SAUVEGARDE.charger();
+MOTEUR.joueurActif=E.joueurActif||"othman";
 
- ecran(`<div class="affiche"><div class="m">${SVG.nimrod}</div><div class="m lune"><svg viewBox="0 0 64 64"><path d="M40 8a24 24 0 1 0 0 48a19 19 0 1 1 0-48z" fill="#f0d27a" stroke="#c9962b" stroke-width="2"/></svg></div><div class="m">${SVG.selene}</div></div><div class="titre"><h1>Les Chroniques d'Al-Qamar</h1><p>La Conquête du Monde — Acte I : L'Atlas Déchiré</p></div>
- <div class="carte"><div class="menu">
- <button id="quete">⚔️ Mode Quête ${Object.keys(E.etapes).length?"(continuer)":""}</button>
- <button disabled>🏕️ Entraînement libre (itération 5)</button>
- <button disabled>🛡️ Versus 1 contre 1 (itération 5)</button>
- <button id="gr">📖 Grimoires</button>
- <button id="cs">🔑 Code de sauvegarde</button>
- <button id="chr" class="petit">${txtChrono()}</button>
- <button id="nouvelle" class="petit">🗑️ Nouvelle partie</button></div>
- ${BANQUE.trials.length<12?`<div class="retour ko">⚠️ Banque complète non chargée — ${BANQUE.trials.length} épreuve sur 12. Recharge la banque depuis l'accueil (fichier Banque_de_questions_Acte_I.json).</div>`:`<p class="texte">Banque chargée : 12 épreuves.</p>`}</div>`);
- document.getElementById("quete").onclick=()=>{hero={x:0,y:4};sceneActive=null;E.intro?sceneCarte():introQuete()};
- document.getElementById("gr").onclick=()=>ouvrirGrimoire();document.getElementById("cs").onclick=ecranSauvegarde;document.getElementById("chr").onclick=ev=>{E.opt.chrono=E.opt.chrono===false;sauver();ev.target.textContent=txtChrono()};
- document.getElementById("nouvelle").onclick=()=>{if(confirm("Effacer toute la progression et recommencer ?")){E=neuf();sauver();accueil()}};
-}
-ecran(`<div class="carte"><h2>Les Chroniques d'Al-Qamar</h2><p class="texte">Ouverture du Grand Atlas…</p></div>`);
-chargerBanque();
+/* ======== SECTION SCÈNES ======== */
+const SCENES={
+ accueil(){
+  UI.afficher(`
+  <div class="titre"><h1>🌙 Les Chroniques d'Al-Qamar</h1><p>Le Pokédex de Culture Générale — V2</p></div>
+  <div class="carte">
+   <h2>⚔️ Choisis ton héros</h2>
+   <div class="choix">
+    <button id="j-othman">🧒 <b>O</b>thman (8 ans, primaire)</button>
+    <button id="j-badr">👦 <b>B</b>adr (12 ans, collège)</button>
+   </div>
+  </div>
+  <div class="menu">
+   <button id="m-disc">🗺️ Les Royaumes de savoir (défis par discipline)</button>
+   <button id="m-boutique">🛒 Le Marchand ambulant</button>
+   <button id="m-grimoire">📖 Mon Grimoire personnel</button>
+   <button id="m-sauv">💾 Sauvegarde et code secours</button>
+  </div>`);
+  document.getElementById("j-othman").onclick=()=>UI.choisirJoueur("othman");
+  document.getElementById("j-badr").onclick=()=>UI.choisirJoueur("badr");
+  document.getElementById("m-disc").onclick=()=>this.disciplines();
+  document.getElementById("m-boutique").onclick=()=>this.boutique();
+  document.getElementById("m-grimoire").onclick=()=>this.grimoire();
+  document.getElementById("m-sauv").onclick=()=>this.sauvegarde();
+ },
+ disciplines(){
+  const st=UI.etat();
+  const cartes=BANQUE.disciplines.map(d=>{
+   const niv=COMBAT.niveau(st,d.id);
+   const pct=Math.round(((niv-1)/10)*100);
+   return `<div class="disco" data-d="${d.id}"><div class="ico">${d.ico}</div><h3>${d.nom}</h3>
+   <div class="rang">Niveau ${niv} / 10</div>
+   <div class="nivbar"><i style="width:${pct}%"></i></div></div>`;
+  }).join("");
+  UI.afficher(`${UI.hud()}<div class="carte"><h2>🗺️ Les Royaumes de savoir</h2>
+  <p class="texte">Chaque royaume est une discipline. Bats son Gardien en répondant aux questions pour monter de niveau !</p>
+  <div class="grille">${cartes}</div></div>`);
+  document.querySelectorAll(".disco").forEach(el=>el.onclick=()=>COMBAT.commencer(el.dataset.d));
+ },
+ combat(){
+  const e=COMBAT.etat;if(!e)return this.disciplines();
+  const st=UI.etat();
+  const pvH=Math.round(e.herosPv/e.herosPvMax*100),pvG=Math.round(e.gardienPv/e.gardienPvMax*100);
+  if(e.fini){
+   const gagne=e.victoire;
+   ECO.recompense(gagne);SAUVEGARDE.sauver();
+   const st2=UI.etat();
+   UI.afficher(`${UI.hud()}<div class="carte">
+   <div class="medaille">${gagne?e.ico+" 🏆":"🌑 ✨"}</div>
+   <h2 style="text-align:center">${gagne?"Victoire ! Le Gardien s'incline.":"L'Encre Noire a eu le dernier mot..."}</h2>
+   <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune. Niveau du royaume relevé !":"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
+   <p style="text-align:center">${gagne?"+10 pièces d'or, +1 point d'expérience":"+2 pièces d'or (compagne de consolation)"} — Or total : ${st2.or} 🪙 — Rang : ${st2.rang}</p>
+   <div class="choix">
+    <button id="c-rev">📖 Voir la leçon dans le Grimoire</button>
+    <button id="c-cont">${gagne?"⚔️ Prochain combat":"🔄 Réessayer ce royaume"}</button>
+    <button id="c-menu">🗺️ Retour aux royaumes</button>
+   </div></div>`);
+   document.getElementById("c-rev").onclick=()=>this.grimoire();
+   document.getElementById("c-cont").onclick=()=>COMBAT.commencer(e.disc);
+   document.getElementById("c-menu").onclick=()=>this.disciplines();
+   return;
+  }
+  const {q,revision}=MOTEUR.choisir(e.disc);
+  const v=MOTEUR.version(q);
+  UI.afficher(`${UI.hud()}<div class="carte">
+  <div class="arene">
+   <div class="camp"><div class="sprite">🧙‍♂️</div><b>${st.nom}</b>
+    <div class="jauge"><i style="width:${pvH}%"></i></div><div class="petite">${Math.round(e.herosPv)} PV</div></div>
+   <div class="vs">⚡</div>
+   <div class="camp"><div class="braise">${e.ico}</div><b>Gardien de ${e.nom}</b>
+    <div class="jauge"><i style="width:${pvG}%"></i></div><div class="petite">${Math.round(e.gardienPv)} PV — Niveau ${e.niv}</div></div>
+  </div>
+  <div class="epreuve"><h3>${revision?"🔁 Question de révision (l'Encre Noire te la reproposant, tu vas la vaincre) !":"✨ Épreuve du Gardien"}</h3>
+  <p class="texte">${v.enonce}</p>
+  <div class="choix">${v.choix.map((c,i)=>`<button data-i="${i}"><b>${"ABC"[i]}</b>${c}</button>`).join("")}</div></div></div>`);
+  document.querySelectorAll(".epreuve button").forEach(b=>b.onclick=()=>UI.repondre(q,v,+b.dataset.i,e.nom));
+ },
+ boutique(){
+  const st=UI.etat();
+  UI.afficher(`${UI.hud()}<div class="carte"><h2>🛒 Le Marchand ambulant</h2>
+  <p class="texte">"Bienvenue, jeune savant ! Que puis-je pour toi ?"</p>
+  ${ECO.boutique.map(it=>`<div class="entree">${it.ico} <b>${it.nom}</b> — ${it.prix} 🪙<br>${it.desc}<br>
+   <button class="petit" data-ach="${it.id}" ${st.or<it.prix?"disabled":""}>Acheter</button></div>`).join("")}
+  <button id="b-ret">Retour</button></div>`);
+  document.querySelectorAll("[data-ach]").forEach(b=>b.onclick=()=>{
+   const it=ECO.boutique.find(x=>x.id===b.dataset.ach);
+   if(ECO.acheter(it)){UI.toast("Acheté : "+it.nom+" ! Il est dans ton sac.");this.boutique()}else UI.toast("Pas assez d'or, reviens plus tard !");
+  });
+  document.getElementById("b-ret").onclick=()=>this.accueil();
+ },
+ grimoire(){
+  const st=UI.etat();
+  const entrees=st.grimoire.slice(0,30).map(g=>`<div class="entree ${g.ok?"ok":"ko"}"><b>${g.disc}</b> — ${g.ok?"✔ Réussi":"✘ À revoir"} <span class="revoir">${g.ok?"": "revoir"}</span><br>
+   ${g.enonce}<br><b>Ta réponse :</b> ${g.repJoueur} — <b>La bonne réponse :</b> ${g.repCorrecte}<br><i>${g.explication}</i></div>`).join("")||"<p class='texte'>Le Grimoire est encore vierge. Affronte un Gardien pour l'emplir !</p>";
+  UI.afficher(`${UI.hud()}<div class="carte"><h2>📖 Le Grimoire de ${st.nom}</h2>${entrees}
+  <button id="g-ret">Retour</button></div>`);
+  document.getElementById("g-ret").onclick=()=>this.accueil();
+ },
+ sauvegarde(){
+  const code=SAUVEGARDE.codeSecours();
+  UI.afficher(`<div class="carte"><h2>💾 Sauvegarde</h2>
+  <p class="texte">Le jeu sauvegarde tout seul après chaque épreuve. En secours, recopie ce code et garde-le précieusement :</p>
+  <textarea id="s-code" readonly>${code}</textarea>
+  <p class="texte">Pour restaurer, colle un code ici :</p>
+  <textarea id="s-coll"></textarea>
+  <button id="s-ok">Restaurer</button> <button id="s-ret">Retour</button></div>`);
+  document.getElementById("s-ok").onclick=()=>{UI.toast(SAUVEGARDE.restaurer(document.getElementById("s-coll").value)?"Grimoire restauré !":"Code illisible...");this.accueil()};
+  document.getElementById("s-ret").onclick=()=>this.accueil();
+ }
+};
+
+/* ======== SECTION INTERFACE ======== */
+const UI={
+ afficher(html){document.getElementById("app").innerHTML=html},
+ etat(){return E.joueurs[MOTEUR.joueurActif]},
+ hud(){const st=this.etat();return `<div class="hud">
+  <span class="joueur actif">🧙 ${st.nom} — ${st.rang} (niv. ${st.niveau})</span>
+  <span><button class="petit" id="h-swap">Changer de héros</button></span>
+  <span class="or">🪙 ${st.or}</span></div>`},
+ choisirJoueur(j){MOTEUR.joueurActif=j;E.joueurActif=j;SAUVEGARDE.sauver();SCENES.disciplines()},
+ toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)},
+ repondre(q,v,i,discNom){
+  const ok=i===v.reponse;
+  const joueur=MOTEUR.joueurActif;
+  GRIMOIRE.consigner(joueur,q.id,discNom,v.enonce,v.choix[i],v.choix[v.reponse],v.explication,ok);
+  ECO.recompense(ok);SAUVEGARDE.sauver();
+  this.toast(ok?"✨ Juste ! Le Gardien vacille !":"🌑 L'Encre Noire assombrit ta lame...");
+  COMBAT.resoudre(ok);
+ }
+};
+SCENES.accueil();
 </script>
 </body>
 </html>
