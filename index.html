@@ -282,10 +282,10 @@ const COMBAT={
 const ECO={
  recompense(ok){
   const st=E.joueurs[MOTEUR.joueurActif];
-  if(ok){st.or+=10;st.xp+=1;this.palier(st)}else{st.or+=2}
+  if(ok){st.or+=10;st.xp+=2;this.palier(st)}else{st.or+=2}
  },
  palier(st){
-  while(st.xp>=st.niveau*5){st.xp-=st.niveau*5;st.niveau++;st.rang=this.rang(st.niveau)}
+  while(st.xp>=st.niveau*3){st.xp-=st.niveau*3;st.niveau++;st.rang=this.rang(st.niveau)}
  },
  rang(n){return n<3?"Écuyer":n<6?"Chevalier":n<10?"Sage":"Légende d'Al-Qamar"},
  boutique:[
@@ -303,13 +303,17 @@ const ECO={
 /* ======== SECTION SAUVEGARDE ======== */
 const CLE="alqamar-v2";
 const SAUVEGARDE={
- defaut(){return{version:2,joueurActif:"othman",joueurs:{
+ defaut(){return{version:3,joueurActif:"othman",joueurs:{
   othman:{nom:"Othman",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}},
   badr:{nom:"Badr",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}}}}},
- charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s&&s.version===2&&s.joueurs)return s}catch(e){}return this.defaut()},
+ migrer(s){
+  if(s&&s.version===2&&s.joueurs){s.version=3;return s}
+  return null
+ },
+ charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s){const m=this.migrer(s);if(m)return m;if(s.version===3&&s.joueurs)return s}}catch(e){}return this.defaut()},
  sauver(){try{localStorage.setItem(CLE,JSON.stringify(E))}catch(e){}},
  codeSecours(){return btoa(unescape(encodeURIComponent(JSON.stringify(E))))},
- restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));if(o&&o.version===2&&o.joueurs){E=o;this.sauver();return true}}catch(e){}return false}
+ restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));const m=o&&this.migrer(o);if(m||(o&&o.version===3&&o.joueurs)){E=o;this.sauver();return true}}catch(e){}return false}
 };
 let E=SAUVEGARDE.charger();
 MOTEUR.joueurActif=E.joueurActif||"othman";
@@ -359,13 +363,16 @@ const SCENES={
   const pvH=Math.round(e.herosPv/e.herosPvMax*100),pvG=Math.round(e.gardienPv/e.gardienPvMax*100);
   if(e.fini){
    const gagne=e.victoire;
-   ECO.recompense(gagne);SAUVEGARDE.sauver();
    const st2=UI.etat();
+   const nivAvant=e.niv,nivApres=COMBAT.niveau(st2,e.disc);
+   const monte=gagne&&nivApres>nivAvant;
+   const xpMax=st2.niveau*3;
    UI.afficher(`${UI.hud()}<div class="carte">
    <div class="medaille">${gagne?e.ico+" 🏆":"🌑 ✨"}</div>
    <h2 style="text-align:center">${gagne?"Victoire ! Le Gardien s'incline.":"L'Encre Noire a eu le dernier mot..."}</h2>
-   <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune. Niveau du royaume relevé !":"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
-   <p style="text-align:center">${gagne?"+10 pièces d'or, +1 point d'expérience":"+2 pièces d'or (compagne de consolation)"} — Or total : ${st2.or} 🪙 — Rang : ${st2.rang}</p>
+   <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune. Ton savoir brille comme la lune.":"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
+   <p style="text-align:center">Or : ${st2.or} 🪙 — Expérience : ${st2.xp}/${xpMax} — Rang : ${st2.rang} (niveau ${st2.niveau})</p>
+   ${monte?`<p class="retour ok" style="text-align:center"><b>🌟 Royaume de ${e.nom} : niveau ${nivAvant} → ${nivApres} débloqué !</b></p>`:""}
    <div class="choix">
     <button id="c-rev">📖 Voir la leçon dans le Grimoire</button>
     <button id="c-cont">${gagne?"⚔️ Prochain combat":"🔄 Réessayer ce royaume"}</button>
