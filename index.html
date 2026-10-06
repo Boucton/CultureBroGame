@@ -249,16 +249,33 @@ const GRIMOIRE={
 };
 
 /* ======== SECTION COMBAT ======== */
-/* Combat tour par tour façon Pokémon : le Gardien de la Discipline lance une question ; bonne réponse = ton attaque réussit, mauvaise réponse = l'Encre Noire contre-attaque (jamais la faute de l'enfant). */
+/* Combat tour par tour façon Pokémon, enrichi (Phase 2) :
+   - 5 caractéristiques du héros : attaque, défense, agilité, sagesse, endurance (dérivées du rang).
+   - Choix d'action à chaque tour : Attaquer (question), Se défendre, Utiliser un objet, Sagesse (question à double enjeu).
+   - Boss narratifs aux niveaux 5 et 10 de chaque royaume. */
 const COMBAT={
  etat:null,
+ /* T1 : caractéristiques dérivées du niveau global du héros */
+ caracs(st){
+  return {attaque:10+st.niveau*2, defense:5+st.niveau, agilite:5+Math.floor(st.niveau/2)+1, sagesse:5+st.niveau*2, endurance:100+st.niveau*10}
+ },
+ /* T4 : gardiens normaux et boss narratifs */
+ gardien(discId,niv){
+  const noms={5:"l'Ombre du Royaume",10:"le Grand Gardien"};
+  const boss=noms[niv];
+  return {nom:boss?`Gardien ${boss} de ${BANQUE.disciplines.find(d=>d.id===discId).nom}`:null,ico:boss?"🐲":"",pv:boss?60+niv*18:60+niv*14,force:boss?18+niv*2:12+niv}
+ },
  commencer(discId){
   const disc=BANQUE.disciplines.find(d=>d.id===discId);
   const st=E.joueurs[MOTEUR.joueurActif];
   const niv=this.niveau(st,discId);
-  this.etat={disc:discId,nom:disc.nom,ico:disc.ico,niv:niv,
-   herosPv:100+st.niveau*5,herosPvMax:100+st.niveau*5,
-   gardienPv:60+niv*15,gardienPvMax:60+niv*15,tour:"heros",fini:false};
+  const c=this.caracs(st);
+  const g=this.gardien(discId,niv);
+  this.etat={disc:discId,nom:disc.nom,ico:disc.ico,niv:niv,boss:g.nom,
+   herosPv:c.endurance,herosPvMax:c.endurance,caracs:c,
+   gardienPv:g.pv,gardienPvMax:g.pv,forceG:g.force,
+   defenseActive:false,tour:"heros",fini:false,indiceUtilise:false};
+  if(st.sac.talisman){st.sac.talisman--;this.etat.herosPv+=20;this.etat.herosPvMax+=20}
   SCENES.combat();
  },
  niveau(st,discId){
@@ -267,14 +284,59 @@ const COMBAT={
   disc.questions.forEach(q=>{const p=st.progression[q.id];if(p&&p.maitrise)n++});
   return Math.min(n,10);
  },
- /* Exécuté après chaque réponse : ok = attaque réussie, !ok = l'Encre Noire frappe. */
+ /* T2 : actions du tour du héros */
+ action(type){
+  const e=this.etat;if(!e||e.fini)return;
+  if(type==="defendre"){
+   e.defenseActive=true;
+   this.tourGardien();
+   return;
+  }
+  if(type==="objet"){SCENES.combat(true);return}
+  /* attaque normale ou sagesse : une question est posée ; sagesse = double enjeu (dégâts x2 si juste, contre-coup si faux) */
+  e.modeSagesse=(type==="sagesse");
+  SCENES.combat();
+ },
+ /* Résolu après chaque réponse : ok = attaque réussit, !ok = l'Encre Noire frappe. */
  resoudre(ok){
   const e=this.etat;if(!e||e.fini)return;
-  if(ok){e.gardienPv=Math.max(0,e.gardienPv-25+Math.round(Math.random()*10))}
-  else{e.herosPv=Math.max(0,e.herosPv-(15+Math.round(Math.random()*8)))}
-  if(e.gardienPv<=0){e.fini=true;e.victoire=true}
-  else if(e.herosPv<=0){e.fini=true;e.victoire=false}
+  if(ok){
+   let deg=e.caracs.attaque+Math.round(Math.random()*6);
+   if(e.modeSagesse)deg*=2;
+   e.gardienPv=Math.max(0,e.gardienPv-deg);
+   e.modeSagesse=false;
+  }else{
+   this.tourGardien();
+   return;
+  }
+  if(e.gardienPv<=0){e.fini=true;e.victoire=true;SCENES.combat();return}
+  this.tourGardien();
+ },
+ /* Tour du Gardien : frappe, réduit par la défense si active */
+ tourGardien(){
+  const e=this.etat;if(!e||e.fini)return;
+  let deg=e.forceG+Math.round(Math.random()*6);
+  if(e.defenseActive){
+   /* Bouclier : coup très réduit par la défense + le héros regagne un peu de souffle */
+   deg=Math.max(0,Math.round(deg*(1-e.caracs.defense/100)-e.caracs.defense/2));
+   e.herosPv=Math.min(e.herosPvMax,e.herosPv+Math.round(e.caracs.defense/2));
+   e.defenseActive=false;
+  }else{deg=Math.max(1,deg-Math.floor(e.caracs.agilite/3))}
+  e.herosPv=Math.max(0,e.herosPv-deg);
+  if(e.herosPv<=0){e.fini=true;e.victoire=false}
   SCENES.combat();
+ },
+ /* T3 : utilisation d'un objet du sac pendant le combat */
+ utiliserObjet(id){
+  const e=this.etat;if(!e||e.fini)return false;
+  const st=E.joueurs[MOTEUR.joueurActif];
+  if(!(st.sac[id]>0))return false;
+  if(id==="soin"){st.sac.soin--;e.herosPv=Math.min(e.herosPvMax,e.herosPv+40)}
+  else if(id==="indice"){st.sac.indice--;e.indiceUtilise=true}
+  else if(id==="talisman"){st.sac.talisman--;e.herosPv+=20;e.herosPvMax+=20}
+  else return false;
+  SAUVEGARDE.sauver();
+  return true;
  }
 };
 
@@ -282,10 +344,10 @@ const COMBAT={
 const ECO={
  recompense(ok){
   const st=E.joueurs[MOTEUR.joueurActif];
-  if(ok){st.or+=10;st.xp+=1;this.palier(st)}else{st.or+=2}
+  if(ok){st.or+=10;st.xp+=2;this.palier(st)}else{st.or+=2}
  },
  palier(st){
-  while(st.xp>=st.niveau*5){st.xp-=st.niveau*5;st.niveau++;st.rang=this.rang(st.niveau)}
+  while(st.xp>=st.niveau*3){st.xp-=st.niveau*3;st.niveau++;st.rang=this.rang(st.niveau)}
  },
  rang(n){return n<3?"Écuyer":n<6?"Chevalier":n<10?"Sage":"Légende d'Al-Qamar"},
  boutique:[
@@ -303,13 +365,17 @@ const ECO={
 /* ======== SECTION SAUVEGARDE ======== */
 const CLE="alqamar-v2";
 const SAUVEGARDE={
- defaut(){return{version:2,joueurActif:"othman",joueurs:{
+ defaut(){return{version:3,joueurActif:"othman",joueurs:{
   othman:{nom:"Othman",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}},
   badr:{nom:"Badr",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}}}}},
- charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s&&s.version===2&&s.joueurs)return s}catch(e){}return this.defaut()},
+ migrer(s){
+  if(s&&s.version===2&&s.joueurs){s.version=3;return s}
+  return null
+ },
+ charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s){const m=this.migrer(s);if(m)return m;if(s.version===3&&s.joueurs)return s}}catch(e){}return this.defaut()},
  sauver(){try{localStorage.setItem(CLE,JSON.stringify(E))}catch(e){}},
  codeSecours(){return btoa(unescape(encodeURIComponent(JSON.stringify(E))))},
- restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));if(o&&o.version===2&&o.joueurs){E=o;this.sauver();return true}}catch(e){}return false}
+ restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));const m=o&&this.migrer(o);if(m||(o&&o.version===3&&o.joueurs)){E=o;this.sauver();return true}}catch(e){}return false}
 };
 let E=SAUVEGARDE.charger();
 MOTEUR.joueurActif=E.joueurActif||"othman";
@@ -352,20 +418,25 @@ const SCENES={
   <p class="texte">Chaque royaume est une discipline. Bats son Gardien en répondant aux questions pour monter de niveau !</p>
   <div class="grille">${cartes}</div></div>`);
   document.querySelectorAll(".disco").forEach(el=>el.onclick=()=>COMBAT.commencer(el.dataset.d));
- },
- combat(){
+  }, combat(objetOuvert){
   const e=COMBAT.etat;if(!e)return this.disciplines();
   const st=UI.etat();
   const pvH=Math.round(e.herosPv/e.herosPvMax*100),pvG=Math.round(e.gardienPv/e.gardienPvMax*100);
+  const c=e.caracs;
+  const nomG=e.boss||("Gardien de "+e.nom);
+  const icoG=e.boss?"🐲":e.ico;
   if(e.fini){
    const gagne=e.victoire;
-   ECO.recompense(gagne);SAUVEGARDE.sauver();
    const st2=UI.etat();
+   const nivAvant=e.niv,nivApres=COMBAT.niveau(st2,e.disc);
+   const monte=gagne&&nivApres>nivAvant;
+   const xpMax=st2.niveau*3;
    UI.afficher(`${UI.hud()}<div class="carte">
-   <div class="medaille">${gagne?e.ico+" 🏆":"🌑 ✨"}</div>
-   <h2 style="text-align:center">${gagne?"Victoire ! Le Gardien s'incline.":"L'Encre Noire a eu le dernier mot..."}</h2>
-   <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune. Niveau du royaume relevé !":"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
-   <p style="text-align:center">${gagne?"+10 pièces d'or, +1 point d'expérience":"+2 pièces d'or (compagne de consolation)"} — Or total : ${st2.or} 🪙 — Rang : ${st2.rang}</p>
+   <div class="medaille">${gagne?icoG+" 🏆":"🌑 ✨"}</div>
+   <h2 style="text-align:center">${gagne?"Victoire ! "+nomG+" s'incline.":"L'Encre Noire a eu le dernier mot..."}</h2>
+   <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune."+(monte?` Royaume de ${e.nom} : niveau ${nivAvant} → ${nivApres} !`:" Les questions maîtrisées renforcent ton royaume."):"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
+   <p style="text-align:center">Or : ${st2.or} 🪙 — Expérience : ${st2.xp}/${xpMax} — Rang : ${st2.rang} (niveau ${st2.niveau})</p>
+   ${monte?`<p class="retour ok" style="text-align:center"><b>🌟 Royaume de ${e.nom} : niveau ${nivAvant} → ${nivApres} débloqué !</b></p>`:""}
    <div class="choix">
     <button id="c-rev">📖 Voir la leçon dans le Grimoire</button>
     <button id="c-cont">${gagne?"⚔️ Prochain combat":"🔄 Réessayer ce royaume"}</button>
@@ -376,20 +447,72 @@ const SCENES={
    document.getElementById("c-menu").onclick=()=>this.disciplines();
    return;
   }
-  const {q,revision}=MOTEUR.choisir(e.disc);
-  const v=MOTEUR.version(q);
+  /* Panneau d'utilisation des objets du sac (T3) */
+  if(objetOuvert){
+   const st2=UI.etat();
+   const items=ECO.boutique.map(it=>`<button data-o="${it.id}" ${st2.sac[it.id]>0?"":"disabled"}>${it.ico} ${it.nom} (${st2.sac[it.id]||0}) — ${it.desc}</button>`).join("");
+   UI.afficher(`${UI.hud()}<div class="carte"><h2>🎒 Sac de ${st.nom}</h2>
+   <div class="choix">${items||"<p class='texte'>Ton sac est vide. Le Marchand ambulant vend des objets utiles !</p>"}</div>
+   <button id="o-ret">↩️ Annuler</button></div>`);
+   document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
+    if(COMBAT.utiliserObjet(b.dataset.o)){
+     UI.toast("Objet utilisé ! L'effet s'applique à ce combat.");
+     if(b.dataset.o==="indice"){SCENES.combat();}
+     else{this.combat(false);}
+    }
+   });
+   document.getElementById("o-ret").onclick=()=>this.combat(false);
+   return;
+  }
+  /* Épreuve en cours : question affichée (attaque ou sagesse) */
+  if(e.questionEnCours){
+   const {q,revision}=e.questionEnCours;
+   const v=MOTEUR.version(q);
+   const choixAff=v.choix.map((ch,i)=>{
+    const raye=e.indiceUtilise&&i===e.indiceExclu;
+    return `<button data-i="${i}" ${raye?"disabled":""}><b>${"ABC"[i]}</b>${ch}</button>`;
+   }).join("");
+   UI.afficher(`${UI.hud()}<div class="carte">
+   <div class="arene">
+   <div class="camp"><div class="sprite">🧙‍♂️</div><b>${st.nom}</b>
+    <div class="jauge"><i style="width:${pvH}%"></i></div><div class="petite">${Math.round(e.herosPv)} PV</div></div>
+   <div class="vs">${e.modeSagesse?"📜":"⚡"}</div>
+   <div class="camp"><div class="braise">${icoG}</div><b>${nomG}</b>
+    <div class="jauge"><i style="width:${pvG}%"></i></div><div class="petite">${Math.round(e.gardienPv)} PV — Niveau ${e.niv}</div></div>
+   </div>
+   <div class="epreuve"><h3>${e.modeSagesse?"📜 Épreuve de Sagesse (dégâts doublés si tu réussis !)":(revision?"🔁 Question de révision — l'Encre Noire te la reposant, tu vas la vaincre !":"✨ Épreuve du Gardien")}</h3>
+   <p class="texte">${v.enonce}</p>
+   <div class="choix">${choixAff}</div></div></div>`);
+   document.querySelectorAll(".epreuve button").forEach(b=>b.onclick=()=>UI.repondre(q,v,+b.dataset.i,e.nom));
+   return;
+  }
+  /* Menu d'actions principal du tour du héros (T2) */
   UI.afficher(`${UI.hud()}<div class="carte">
   <div class="arene">
    <div class="camp"><div class="sprite">🧙‍♂️</div><b>${st.nom}</b>
-    <div class="jauge"><i style="width:${pvH}%"></i></div><div class="petite">${Math.round(e.herosPv)} PV</div></div>
+    <div class="jauge"><i style="width:${pvH}%"></i></div><div class="petite">${Math.round(e.herosPv)} / ${e.herosPvMax} PV</div>
+    <div class="petite">⚔️${c.attaque} 🛡️${c.defense} 🏃${c.agilite} 📜${c.sagesse}</div></div>
    <div class="vs">⚡</div>
-   <div class="camp"><div class="braise">${e.ico}</div><b>Gardien de ${e.nom}</b>
+   <div class="camp"><div class="braise">${icoG}</div><b>${nomG}${e.defenseActive?" (tu te défends)":""}</b>
     <div class="jauge"><i style="width:${pvG}%"></i></div><div class="petite">${Math.round(e.gardienPv)} PV — Niveau ${e.niv}</div></div>
   </div>
-  <div class="epreuve"><h3>${revision?"🔁 Question de révision (l'Encre Noire te la reproposant, tu vas la vaincre) !":"✨ Épreuve du Gardien"}</h3>
-  <p class="texte">${v.enonce}</p>
-  <div class="choix">${v.choix.map((c,i)=>`<button data-i="${i}"><b>${"ABC"[i]}</b>${c}</button>`).join("")}</div></div></div>`);
-  document.querySelectorAll(".epreuve button").forEach(b=>b.onclick=()=>UI.repondre(q,v,+b.dataset.i,e.nom));
+  <h3>Que fais-tu, ${st.nom} ?</h3>
+  <div class="choix">
+   <button id="a-att">⚔️ Attaquer — réponds à une question pour frapper</button>
+   <button id="a-sag">📜 Sagesse — question à double enjeu (dégâts ×2)</button>
+   <button id="a-def">🛡️ Se défendre — encaisse le prochain coup</button>
+   <button id="a-obj">🎒 Sac — utiliser un objet</button>
+  </div></div>`);
+  document.getElementById("a-att").onclick=()=>{const {q,revision}=MOTEUR.choisir(e.disc);e.questionEnCours={q,revision};e.modeSagesse=false;e.indiceExclu=e.indiceUtilise?this.exclu(e.questionEnCours.q):null;SCENES.combat()};
+  document.getElementById("a-sag").onclick=()=>{const {q,revision}=MOTEUR.choisir(e.disc);e.questionEnCours={q,revision};e.modeSagesse=true;e.indiceExclu=e.indiceUtilise?this.exclu(e.questionEnCours.q):null;SCENES.combat()};
+  document.getElementById("a-def").onclick=()=>COMBAT.action("defendre");
+  document.getElementById("a-obj").onclick=()=>this.combat(true);
+ },
+ exclu(q){
+  /* choisit une mauvaise réponse à rayer pour l'indice */
+  const v=MOTEUR.version(q);
+  const mauvaises=[0,1,2].filter(i=>i!==v.reponse);
+  return mauvaises[Math.floor(Math.random()*mauvaises.length)];
  },
  boutique(){
   const st=UI.etat();
@@ -440,7 +563,8 @@ const UI={
   const joueur=MOTEUR.joueurActif;
   GRIMOIRE.consigner(joueur,q.id,discNom,v.enonce,v.choix[i],v.choix[v.reponse],v.explication,ok);
   ECO.recompense(ok);SAUVEGARDE.sauver();
-  this.toast(ok?"✨ Juste ! Le Gardien vacille !":"🌑 L'Encre Noire assombrit ta lame...");
+  if(COMBAT.etat){COMBAT.etat.questionEnCours=null;COMBAT.etat.indiceUtilise=false}
+  this.toast(ok?(COMBAT.etat&&COMBAT.etat.modeSagesse?"📜 Sagesse ! Coup double !":"✨ Juste ! Le Gardien vacille !"):"🌑 L'Encre Noire assombrit ta lame...");
   COMBAT.resoudre(ok);
  }
 };
