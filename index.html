@@ -220,6 +220,68 @@ const BANQUE={disciplines:[
 ]}
 ]};
 
+/* ======== SECTION CRÉATURES DE SAVOIR (Phase 4) ======== */
+/* Le cœur Pokémon de la V2 : chaque royaume abrite des Créatures de savoir.
+   Une créature se capture quand le niveau du royaume atteint son rang (2, 4, 6, 8, 10).
+   Elles se rangent dans le Bestiaire du joueur, par royaume. */
+const CREATURES=[
+ {id:"geo-2",royaume:"geo",rang:2,nom:"Rosace des Sables",ico:"🏜️",cri:"Elle fait tournoyer les dunes pour dessiner des cartes."},
+ {id:"geo-4",royaume:"geo",rang:4,nom:"Pyrénée, Géante aux Deux Rives",ico:"⛰️",cri:"Elle porte un village sur chaque épaule, l'un français, l'autre espagnol."},
+ {id:"geo-6",royaume:"geo",rang:6,nom:"Evereste Ciel-Perché",ico:"🏔️",cri:"Elle reste calme, même tête en haut dans les nuages."},
+ {id:"geo-8",royaume:"geo",rang:8,nom:"Océanie Profonde",ico:"🌊",cri:"Elle garde le plus grand des océans sous son manteau d'écume."},
+ {id:"geo-10",royaume:"geo",rang:10,nom:"Atlas, Père des Cartes",ico:"🧭",cri:"Il a dessiné la première rose des vents du monde."},
+ {id:"hist-2",royaume:"hist",rang:2,nom:"Papyrus, Memoriaire",ico:"📜",cri:"Elle se souvient de tout, même des pharaons."},
+ {id:"hist-4",royaume:"hist",rang:4,nom:"Griffon de Gutenberg",ico:" Gutenberg 🖨️".replace(" Gutenberg ",""),cri:"De ses ailes tombent des pages encore chaudes d'encre."},
+ {id:"hist-6",royaume:"hist",rang:6,nom:"Lion de 1789",ico:"🦁",cri:"Il rugit liberté chaque matin au lever du soleil."},
+ {id:"hist-8",royaume:"hist",rang:8,nom:"Samouraï-Lune",ico:"🎎",cri:"Son sabre tranche les erreurs de l'Histoire."},
+ {id:"hist-10",royaume:"hist",rang:10,nom:"Chronos-Pacha",ico:"⏳",cri:"Il retourne les sabliers pour te laisser réviser."},
+ {id:"sci-2",royaume:"sci",rang:2,nom:"Gouttelette",ico:"💧",cri:"Elle devient glace, vapeur ou pluie selon son humeur."},
+ {id:"sci-4",royaume:"sci",rang:4,nom:"Arachnide aux Huit Savants",ico:"🕷️",cri:"Chacune de ses pattes compte une table de multiplication."},
+ {id:"sci-6",royaume:"sci",rang:6,nom:"Prisme Arc-en-Ciel",ico:"🌈",cri:"Il sépare la lumière blanche en sept rubans."},
+ {id:"sci-8",royaume:"sci",rang:8,nom:"Boussole-Vive",ico:"🧲",cri:"Son cœur de fer ne trompe jamais le voyageur."},
+ {id:"sci-10",royaume:"sci",rang:10,nom:"Chenille du Grand Devenir",ico:"🦋",cri:"Elle a traversé la métamorphose et connaît tous ses secrets."},
+ {id:"math-2",royaume:"math",rang:2,nom:"Duo de Dizaines",ico:"🔢",cri:"Ils ne sortent jamais l'un sans l'autre : 6 et 6."},
+ {id:"math-4",royaume:"math",rang:4,nom:"Triangle Recto",ico:"📐",cri:"Son angle droit n'a jamais menti."},
+ {id:"math-6",royaume:"math",rang:6,nom:"Carré-Parfait",ico:"⬛",cri:"144 facettes, ni une de plus, ni une de moins."},
+ {id:"math-8",royaume:"math",rang:8,nom:"Métronome",ico:"📏",cri:"Il bat la mesure : 60 minutes, 900 secondes, toujours juste."},
+ {id:"math-10",royaume:"math",rang:10,nom:"Al-Khwarizmi Junior",ico:"🧮",cri:"Il range les nombres comme des perles d'algèbre."},
+ {id:"fr-2",royaume:"fr",rang:2,nom:"Cheval-aux-Deux-Pluriels",ico:"🐎",cri:"Il dit chevaux et travaux sans jamais trébucher."},
+ {id:"fr-4",royaume:"fr",rang:4,nom:"Madame Majuscule",ico:"🔠",cri:"Elle coiffe les noms propres de son chapeau doré."},
+ {id:"fr-6",royaume:"fr",rang:6,nom:"Syllabion",ico:"🗣️",cri:"Il découpe les mots en petits morceaux chantants."},
+ {id:"fr-8",royaume:"fr",rang:8,nom:"Verbe-Action",ico:"🏃",cri:"Il conjugue en courant : je fuis, tu fuis, il fuit !"},
+ {id:"fr-10",royaume:"fr",rang:10,nom:"La Plume Dorée",ico:"🖋️",cri:"Elle écrit des phrases si belles qu'elles illuminent la nuit."},
+ {id:"astro-2",royaume:"astro",rang:2,nom:"Croissant-Vagabond",ico:"🌙",cri:"Il change de forme chaque soir pour ne jamais s'endormir."},
+ {id:"astro-4",royaume:"astro",rang:4,nom:"Soleil-Rugissant",ico:"☀️",cri:"Son souffle de plasma réchauffe neuf planètes."},
+ {id:"astro-6",royaume:"astro",rang:6,nom:"Anneau de Saturne",ico:"🪐",cri:"Elle tourne sans fin, pareille à elle-même."},
+ {id:"astro-8",royaume:"astro",rang:8,nom:"Laïka des Étoiles",ico:"🐕",cri:"Elle a vu la Terre toute ronde avant tout le monde."},
+ {id:"astro-10",royaume:"astro",rang:10,nom:"Voyager, le Grand Voyageur",ico:"🛰️",cri:"Il emporte la musique de la Terre vers les étoiles."},
+ {id:"corp-2",royaume:"corp",rang:2,nom:"Battement",ico:"❤️",cri:"Il tape des mains cent mille fois par jour sans se fatiguer."},
+ {id:"corp-4",royaume:"corp",rang:4,nom:"Croquée-La-Blanche",ico:"🦷",cri:"Elle a attendu 32 dents sous un oreiller de lait."},
+ {id:"corp-6",royaume:"corp",rang:6,nom:"Cerveau-Commandant",ico:"🧠",cri:"Il dirige tout le royaume du corps depuis sa tour d'ivoire."},
+ {id:"corp-8",royaume:"corp",rang:8,nom:"Sommeil-des-Rêves",ico:"😴",cri:"Elle range les souvenirs de la journée sur des étagères."},
+ {id:"corp-10",royaume:"corp",rang:10,nom:"Capillaire-Perceur",ico:"🩸",cri:"Il file si fin qu'il laisse passer les idées une à une."},
+ {id:"islam-2",royaume:"islam",rang:2,nom:"Cinq-Piliers",ico:"🕌",cri:"Il tient la mosquée debout sur ses cinq colonnes."},
+ {id:"islam-4",royaume:"islam",rang:4,nom:"Muezzin des Nuages",ico:" loudspeaker 📣".replace(" loudspeaker ",""),cri:"Son appel traverse les ciels pour rassembler les croyants."},
+ {id:"islam-6",royaume:"islam",rang:6,nom:"Shahrazade Conteur",ico:"📿",cri:"Elle conte mille et une nuits sans jamais répéter."},
+ {id:"islam-8",royaume:"islam",rang:8,nom:"Ibn Sina Guérisseur",ico:"💊",cri:"Son canon de médecine a soigné des siècles entiers."},
+ {id:"islam-10",royaume:"islam",rang:10,nom:"Al-Khwarizmi Sage",ico:"🔦",cri:"Il a inventé l'algèbre en comptant les étoiles."},
+ {id:"anim-2",royaume:"anim",rang:2,nom:"Trompette",ico:"🐘",cri:"Il arrose ses amis d'une pluie tiède et drôle."},
+ {id:"anim-4",royaume:"anim",rang:4,nom:"Fierté-Lionne",ico:"🦁",cri:"Elle chante en groupe avec toute sa famille dorée."},
+ {id:"anim-6",royaume:"anim",rang:6,nom:"Mélodie-Abielle",ico:"🐝",cri:"Elle danse en huit pour dire où fleurit le miel."},
+ {id:"anim-8",royaume:"anim",rang:8,nom:"Guépard-Éclair",ico:"🐆",cri:"Il court à 110 km/h sur des pattes de vent."},
+ {id:"anim-10",royaume:"anim",rang:10,nom:"Baleine des Abysses",ico:"🐋",cri:"Son chant voyage sous l'eau jusqu'à l'autre bout de l'océan."},
+ {id:"mus-2",royaume:"mus",rang:2,nom:"Octavio Clavier",ico:"🎹",cri:"Il a 88 dents noires et blanches et sourit en do majeur."},
+ {id:"mus-4",royaume:"mus",rang:4,nom:"Archet-Volant",ico:"🎻",cri:"Il caresse les cordes jusqu'à ce qu'elles chantent."},
+ {id:"mus-6",royaume:"mus",rang:6,nom:"Oud d'Andalousie",ico:"🪕",cri:"Ses cordes résonnent comme les jardins de Grenade."},
+ {id:"mus-8",royaume:"mus",rang:8,nom:"Chœur des Moines",ico:"🎶",cri:"Ils chantent a cappella dans l'echo des cathédrales."},
+ {id:"mus-10",royaume:"mus",rang:10,nom:"Maestro Zellige",ico:"🎼",cri:"Il dirige l'orchestre avec un pinceau de calligraphe."},
+ {id:"tech-2",royaume:"tech",rang:2,nom:"Sonnette-Wi-Fi",ico:"📶",cri:"Elle relie les objets sans aucun fil, par magie d'ondes."},
+ {id:"tech-4",royaume:"tech",rang:4,nom:"Roue-Ancienne",ico:"☸️",cri:"Elle tourne depuis 5 500 ans sans demander thanks."},
+ {id:"tech-6",royaume:"tech",rang:6,nom:"Robo-Scribe",ico:"🤖",cri:"Il suit son programme à la lettre, sans jamais se plaindre."},
+ {id:"tech-8",royaume:"tech",rang:8,nom:"Alizé-Voilier",ico:"⛵",cri:"Il souffle dans les voiles depuis que les mers existent."},
+ {id:"tech-10",royaume:"tech",rang:10,nom:"Pixel-Lumière",ico:"📷",cri:"Elle capture la lumière un million de points à la fois."}
+];
+
 /* ======== SECTION MOTEUR DE QUESTIONS ======== */
 const MOTEUR={
  joueurActif:"othman",
@@ -369,20 +431,61 @@ const ECO={
 /* ======== SECTION SAUVEGARDE ======== */
 const CLE="alqamar-v2";
 const SAUVEGARDE={
- defaut(){return{version:3,joueurActif:"othman",joueurs:{
-  othman:{nom:"Othman",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}},
-  badr:{nom:"Badr",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{}}}}},
+ defaut(){return{version:4,joueurActif:"othman",joueurs:{
+  othman:{nom:"Othman",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{},creatures:[]},
+  badr:{nom:"Badr",niveau:1,xp:0,or:30,rang:"Écuyer",grimoire:[],progression:{},sac:{},creatures:[]}}}},
  migrer(s){
-  if(s&&s.version===2&&s.joueurs){s.version=3;return s}
+  if(s&&s.joueurs){
+   if(s.version===2){s.version=3}
+   if(s.version===3){
+    s.version=4;
+    Object.values(s.joueurs).forEach(j=>{j.creatures=j.creatures||[]});
+    return s;
+   }
+  }
   return null
  },
- charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s){const m=this.migrer(s);if(m)return m;if(s.version===3&&s.joueurs)return s}}catch(e){}return this.defaut()},
+ charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s){const m=this.migrer(s);if(m)return m;if(s.version===4&&s.joueurs)return s}}catch(e){}return this.defaut()},
  sauver(){try{localStorage.setItem(CLE,JSON.stringify(E))}catch(e){}},
  codeSecours(){return btoa(unescape(encodeURIComponent(JSON.stringify(E))))},
- restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));const m=o&&this.migrer(o);if(m||(o&&o.version===3&&o.joueurs)){E=o;this.sauver();return true}}catch(e){}return false}
+ restaurer(code){try{const o=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));const m=o&&this.migrer(o);if(m||(o&&o.version===4&&o.joueurs)){E=o;this.sauver();return true}}catch(e){}return false}
 };
 let E=SAUVEGARDE.charger();
 MOTEUR.joueurActif=E.joueurActif||"othman";
+
+/* ======== SECTION BESTIAIRE (Phase 4) ======== */
+const BIBLIOTHECaire={
+ /* Capture : quand le royaume atteint un rang-palier (2,4,6,8,10), la créature correspondante rejoint le joueur. Retourne la créature si nouvelle, sinon null. */
+ capturer(st,royaume,niveau){
+  const c=CREATURES.find(x=>x.royaume===royaume&&x.rang===niveau);
+  if(!c)return null;
+  st.creatures=st.creatures||[];
+  if(st.creatures.includes(c.id))return null;
+  st.creatures.push(c.id);
+  SAUVEGARDE.sauver();
+  return c;
+ },
+ total(){return CREATURES.length},
+ captures(st){return (st.creatures||[]).length},
+ /* Rattrapage : à l'ouverture du Bestiaire, capture rétroactive des paliers déjà atteints */
+ rattraper(st){
+  let nouvelles=[];
+  BANQUE.disciplines.forEach(d=>{
+   const niv=COMBAT.niveau(st,d.id);
+   [2,4,6,8,10].forEach(r=>{
+    if(niv>=r){
+     const c=CREATURES.find(x=>x.royaume===d.id&&x.rang===r);
+     if(c&&!(st.creatures||[]).includes(c.id)){
+      (st.creatures=st.creatures||[]).push(c.id);
+      nouvelles.push(c);
+     }
+    }
+   });
+  });
+  if(nouvelles.length)SAUVEGARDE.sauver();
+  return nouvelles;
+ }
+};
 
 /* ======== SECTION QUÊTE COOPÉRATIVE ======== */
 /* Quête coopérative : Othman et Badr jouent ensemble au même clavier, chacun son tour.
@@ -515,6 +618,7 @@ const SCENES={
    <button id="m-versus">⚔️ Versus 1 contre 1 (duel de frères)</button>
    <button id="m-boutique">🛒 Le Marchand ambulant</button>
    <button id="m-grimoire">📖 Mon Grimoire personnel</button>
+   <button id="m-bestiaire">🦋 Mon Bestiaire (Créatures de savoir)</button>
    <button id="m-sauv">💾 Sauvegarde et code secours</button>
   </div>`);
   document.getElementById("j-othman").onclick=()=>UI.choisirJoueur("othman");
@@ -525,6 +629,7 @@ const SCENES={
   document.getElementById("m-versus").onclick=()=>VERSUS.commencer();
   document.getElementById("m-boutique").onclick=()=>this.boutique();
   document.getElementById("m-grimoire").onclick=()=>this.grimoire();
+  document.getElementById("m-bestiaire").onclick=()=>this.bestiaire();
   document.getElementById("m-sauv").onclick=()=>this.sauvegarde();
  },
  disciplines(){
@@ -552,6 +657,7 @@ const SCENES={
    const st2=UI.etat();
    const nivAvant=e.niv,nivApres=COMBAT.niveau(st2,e.disc);
    const monte=gagne&&nivApres>nivAvant;
+   const nouv=monte?BIBLIOTHECaire.capturer(st2,e.disc,nivApres):null;
    const xpMax=st2.niveau*3;
    UI.afficher(`${UI.hud()}<div class="carte">
    <div class="medaille">${gagne?icoG+" 🏆":"🌑 ✨"}</div>
@@ -559,6 +665,7 @@ const SCENES={
    <p class="texte" style="text-align:center">${gagne?"Ton savoir brille comme la lune."+(monte?` Royaume de ${e.nom} : niveau ${nivAvant} → ${nivApres} !`:" Les questions maîtrisées renforcent ton royaume."):"Ce n'est pas ta faute : l'Encre Noire a triché. Les notions manquées reviendront en priorité."}</p>
    <p style="text-align:center">Or : ${st2.or} 🪙 — Expérience : ${st2.xp}/${xpMax} — Rang : ${st2.rang} (niveau ${st2.niveau})</p>
    ${monte?`<p class="retour ok" style="text-align:center"><b>🌟 Royaume de ${e.nom} : niveau ${nivAvant} → ${nivApres} débloqué !</b></p>`:""}
+   ${nouv?`<p class="retour ok" style="text-align:center"><b>${nouv.ico} Une Créature de savoir t'a rejoint : ${nouv.nom} !</b><br><i>« ${nouv.cri} »</i> — Retrouve-la dans ton Bestiaire.</p>`:""}
    <div class="choix">
     <button id="c-rev">📖 Voir la leçon dans le Grimoire</button>
     <button id="c-cont">${gagne?"⚔️ Prochain combat":"🔄 Réessayer ce royaume"}</button>
@@ -714,6 +821,30 @@ const SCENES={
   });
   document.getElementById("b-ret").onclick=()=>this.accueil();
  },
+ /* T3 : Bestiaire — collection de Créatures de savoir, silhouettes pour les non-capturées */
+ bestiaire(){
+  const st=UI.etat();
+  const nouvelles=BIBLIOTHECaire.rattraper(st);
+  const captures=st.creatures||[];
+  const parRoyaume=BANQUE.disciplines.map(d=>{
+   const cartes=CREATURES.filter(c=>c.royaume===d.id).map(c=>{
+    const aie=captures.includes(c.id);
+    return `<div class="disco" style="min-height:90px;${aie?"":"filter:grayscale(1);opacity:.6"}">
+     <div class="ico">${aie?c.ico:"❔"}</div>
+     <h3>${aie?c.nom:"???"}</h3>
+     <div class="rang">${aie?c.cri:"Se capture au niveau "+c.rang+" du royaume"}</div>
+    </div>`;
+   }).join("");
+   return `<h3>${d.ico} ${d.nom}</h3><div class="grille">${cartes}</div>`;
+  }).join("<hr style='border:1px double var(--or);opacity:.4'>");
+  UI.afficher(`${UI.hud()}<div class="carte">
+  <h2>🦋 Bestiaire de ${st.nom}</h2>
+  <p class="texte">Créatures capturées : <b>${captures.length} / ${BIBLIOTHECaire.total()}</b> — chaque montée de niveau d'un royaume (2, 4, 6, 8, 10) t'offre une Créature de savoir !</p>
+  ${nouvelles.length?`<p class="retour ok">✨ Le Gardien du Bestiaire t'a confié ${nouvelles.length} créature(s) oubliée(s) lors de tes précédentes victoires !</p>`:""}
+  ${parRoyaume}
+  <button id="b-ret" style="margin-top:10px">Retour</button></div>`);
+  document.getElementById("b-ret").onclick=()=>this.accueil();
+ },
  grimoire(){
   const st=UI.etat();
   const entrees=st.grimoire.slice(0,30).map(g=>`<div class="entree ${g.ok?"ok":"ko"}"><b>${g.disc}</b> — ${g.ok?"✔ Réussi":"✘ À revoir"} <span class="revoir">${g.ok?"": "revoir"}</span><br>
@@ -742,6 +873,7 @@ const UI={
  hud(){const st=this.etat();return `<div class="hud">
   <span class="joueur actif">🧙 ${st.nom} — ${st.rang} (niv. ${st.niveau})</span>
   <span><button class="petit" id="h-swap">Changer de héros</button></span>
+  <span class="or">🦋 ${(st.creatures||[]).length}/${BIBLIOTHECaire.total()}</span>
   <span class="or">🪙 ${st.or}</span></div>`},
  choisirJoueur(j){MOTEUR.joueurActif=j;E.joueurActif=j;SAUVEGARDE.sauver();SCENES.disciplines()},
  toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)},
