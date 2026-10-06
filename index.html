@@ -105,6 +105,8 @@ textarea{width:100%;height:90px;font:14px monospace;border:3px solid var(--or);b
 .affiche{display:flex;justify-content:center;align-items:flex-end;gap:14px}.affiche .m{width:90px}.affiche .lune{width:120px}.affiche svg{width:100%;display:block}
 @media(prefers-reduced-motion:no-preference){.affiche .m{animation:respire 2.2s ease-in-out infinite alternate}}
 
+#modale{position:fixed;inset:0;background:#000a;z-index:60;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+#modale .carte{width:100%;max-width:860px;margin:8px 0}
 .illus{width:150px;margin:8px auto}.illus svg{width:100%;display:block;border:2px solid var(--or);border-radius:4px;background:#fff}
 .defi{margin:6px 0}.defi.ok{opacity:.8}
 .petit.sel{background:var(--or);color:var(--encre);border-color:var(--grenat)}
@@ -323,12 +325,11 @@ function lancerDuel(id,fin){
 /* ============================ GRIMOIRE ============================ */
 // (Itération 2 : écran complet. Ici, on enregistre déjà chaque question dans E.joueurs[j].grimoire.)
 const pages=j=>E.joueurs[j].grimoire.length;
-let RETOUR=null;
 function revoir(j){const m={};E.joueurs[j].grimoire.forEach(e=>m[e.q]=e.ok);return Object.keys(m).filter(k=>!m[k])}
 function maitrisees(j){const m={};E.joueurs[j].grimoire.forEach(e=>m[e.q]=e.ok);return Object.values(m).filter(Boolean).length}
 const totalQ=()=>BANQUE.trials.reduce((n,t)=>n+t.questions.length,0);
 function ouvrirGrimoire(j){
- SON.page();j=j||E.actif;const back=RETOUR||accueil,g=E.joueurs[j].grimoire,rv=revoir(j),pct=Math.round(100*maitrisees(j)/totalQ());
+ SON.page();j=j||E.actif;const g=E.joueurs[j].grimoire,rv=revoir(j),pct=Math.round(100*maitrisees(j)/totalQ());
  const med={or:"🥇",argent:"🥈",bronze:"🥉"};
  let h=`<div class="onglets">${Object.keys(JOUEURS).map(k=>`<button class="${k===j?"sel":""}" onclick="ouvrirGrimoire('${k}')">📖 Grimoire de ${JOUEURS[k].nom}</button>`).join("")}</div>
  <div class="carte"><h2>Le Grand Grimoire de ${JOUEURS[j].titre}</h2>
@@ -339,8 +340,8 @@ function ouvrirGrimoire(j){
   const aR=es.some(e=>rv.includes(e.q));
   h+=`<div class="epreuve"><h3>${t.scene} ${med[E.etapes[t.id]]||""} ${aR?'<span class="revoir">à revoir</span>':""}</h3><div>Notion : ${t.notion}</div>`+
   es.map(e=>`<div class="entree ${e.ok?"ok":"ko"}"><b>${e.ok?"✅":"❌"} ${e.enonce}</b><br>Ta réponse : ${e.sa}${e.ok?"":`<br>Bonne réponse : ${e.bonne}`}<br>📖 ${e.explication}${e.illus?`<div class="illus">${ILLUS[e.illus]||""}</div>`:""}</div>`).join("")+`</div>`});
- ecran(h+`</div><div class="pagination"><button class="petit" id="r">← Retour</button></div>`);
- document.getElementById("r").onclick=back;
+ ecran(h+`</div><div class="pagination"><button class="petit" id="r">✖ Fermer</button>`);
+ document.getElementById("r").onclick=fermerModale;
 }
 function ecranSauvegarde(){
  const code=btoa(unescape(encodeURIComponent(JSON.stringify(E))));
@@ -359,11 +360,14 @@ function ecranSauvegarde(){
 // (Itération 4)
 
 /* ============================ INTERFACE ============================ */
+function ouvrirModale(html){fermerModale();const m=document.createElement("div");m.id="modale";m.innerHTML=`<div class="carte">${html}</div>`;m.onclick=e=>{if(e.target===m)fermerModale()};document.body.appendChild(m)}
+function fermerModale(){const m=document.getElementById("modale");if(m)m.remove()}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")fermerModale()});
 function ecran(h){const a=document.getElementById("app");a.classList.toggle("nofade",sansFondu);sansFondu=false;a.innerHTML=h;window.scrollTo(0,0)}
 function hud(q){const j=E.actif,nv=niveau(j);
  return `<div class="hud"><div class="tour ${j}"><span class="mini">${SVG[JOUEURS[j].fam.toLowerCase()]}</span> C'est le tour de ${JOUEURS[j].nom}</div>
  <div class="niv">⭐ Niv. ${nv.n} · ${nv.titre}<div class="jauge petitej"><i style="width:${Math.round(100*nv.reste/PALIER)}%"></i></div></div>
- <div class="sac"><span>🪙 ${E.or}</span><span>💎 ${E.sagesse}</span><span>🧪 ${E.potions}</span><span>🧭 ${E.objets.length}</span>${q?"":`<button class="petit" onclick="ecranQuete()">📜 Quête</button> <button class="petit" onclick="ecranSac()">🎒 Sac</button> <button class="petit" onclick="ouvrirGrimoire()">📖 Grimoire</button>`}</div></div>`}
+ <div class="sac"><span>🪙 ${E.or}</span><span>💎 ${E.sagesse}</span><span>🧪 ${E.potions}</span><span>🧭 ${E.objets.length}</span>${q?"":`<button class="petit" onclick="ecranQuete()">📜 Quête</button>`} <button class="petit" onclick="ecranSac()">🎒 Sac</button> <button class="petit" onclick="ouvrirGrimoire()">📖 Grimoire</button></div></div>`}
 function dialogue(lignes,fin){
  const L=[];lignes.forEach(l=>{const ph=l.texte.match(/[^.!?…]+[.!?…]+\s*|[^.!?…]+$/g)||[l.texte];for(let k=0;k<ph.length;k+=2)L.push({...l,texte:ph.slice(k,k+2).join("").trim()})}); // 2 phrases max par page
  let i=0,timer=null;
@@ -456,16 +460,16 @@ function ramasser(){ // appelé à chaque pas : ramasse le trésor de la case o�
  else{E.parch.push(it[3]);gagnerXP(j,8);toast(`📜 ${ANEC[it[3]]}<br><b>+8 XP pour ${JOUEURS[j].nom}</b>`,5.5)}
  sauver()}
 function ecranSac(){
- const back=RETOUR||accueil,tot=Object.values(DECORS).reduce((n,d)=>n+d.items.length,0)+Object.keys(FAIT).length;SON.page();
- ecran(`<div class="carte"><h2>🎒 Le Sac de l'équipe</h2>
+ const tot=Object.values(DECORS).reduce((n,d)=>n+d.items.length,0)+Object.keys(FAIT).length;SON.page();
+ ouvrirModale(`<h2>🎒 Le Sac de l'équipe</h2>
  <div class="entree">🪙 <b>${E.or}</b> pièces d'or — à échanger :<br><button class="petit" id="e1" ${E.or<20?"disabled":""}>20 🪙 → 1 💎</button> <button class="petit" id="e2" ${E.or<30?"disabled":""}>30 🪙 → 1 🧪</button></div>
  <div class="entree"><span class="ico">${ICO.sagesse}</span> <b>${E.sagesse}</b> Pièces de Sagesse — le bouton 💡 Indice écarte une mauvaise réponse.</div>
  <div class="entree"><span class="ico">${ICO.potion}</span> <b>${E.potions}</b> potions — redonnent un cœur pendant un duel.</div>
  ${Object.keys(OBJ).map(n=>{const a=E.objets.includes(n);return `<div class="entree ${a?"ok":""}"><span class="ico">${a?ICO[OBJ[n].ic]:"❔"}</span> <b>${a?n:"Objet à découvrir"}</b><br>${a?OBJ[n].u:"Continue l'aventure pour l'obtenir."}</div>`}).join("")}
  <div class="entree"><span class="ico">${ICO.parchemin}</span> Parchemins : <b>${E.parch.length}/${ANEC.length}</b>${E.parch.map(i=>`<br>• ${ANEC[i]}`).join("")}</div>
  <div class="entree"><span class="ico">${ICO.etagere}</span> Savoirs du décor : <b>${Object.keys(FAIT).filter(k=>E.collecte["fait:"+k]).length}/${Object.keys(FAIT).length}</b>${Object.keys(FAIT).filter(k=>E.collecte["fait:"+k]).map(k=>`<br>• ${FAIT[k]}`).join("")}</div>
- <p class="texte">🗺️ Trésors ramassés : ${Object.keys(E.collecte).length}/${tot}</p><button class="petit" id="r">← Retour</button></div>`);
- document.getElementById("r").onclick=back;
+ <p class="texte">🗺️ Trésors ramassés : ${Object.keys(E.collecte).length}/${tot}</p><button class="petit" id="r">✖ Fermer</button>`);
+ document.getElementById("r").onclick=fermerModale;
  document.getElementById("e1").onclick=()=>{E.or-=20;E.sagesse++;sauver();SON.piece();ecranSac()};
  document.getElementById("e2").onclick=()=>{E.or-=30;E.potions++;sauver();SON.piece();ecranSac()};
 }
@@ -532,17 +536,17 @@ function introQuete(){
  <button id="go">Commencer l'aventure !</button></div>`);
  document.getElementById("go").onclick=()=>{E.intro=1;sauver();sceneCarte()}}
 function ecranQuete(){
- verifierDefis();const back=RETOUR||accueil,cur=courante();SON.page();
+ verifierDefis();const cur=courante();SON.page();
  ecran(`<div class="carte"><h2>📜 Journal de quête</h2><p class="texte"><b>🏁 Atteindre Bruxelles</b> — ${nbFait()}/${ETAPES.length} épreuves</p><div class="jauge"><i style="width:${Math.round(100*nbFait()/ETAPES.length)}%"></i></div>
  ${CHAPITRES().map(c=>{const l=ETAPES.filter(e=>e.scene===c),f=l.filter(e=>E.etapes[e.id]).length;return `<div class="entree ${f===l.length?"ok":""}">${f===l.length?"✅":cur&&cur.scene===c?"▶️":"⬜"} ${DECORS[c].nom} (${f}/${l.length})</div>`}).join("")}
  <p class="texte">🎯 ${cur?"Prochain objectif : <b>"+cur.obj+"</b>":"Acte I accompli !"}</p>
  <h3>⭐ Objectifs secondaires (${nbDefis()}/${DEFIS.length})</h3>${DEFIS.map(d=>{const ok=E.defis&&E.defis[d.id],n=Math.min(d.n(),d.max);return `<div class="defi ${ok?"ok":""}">${ok?"✅":"⬜"} ${d.t} <small>(${n}/${d.max}) → ${d.r}</small><div class="jauge petitej"><i style="width:${Math.round(100*n/d.max)}%"></i></div></div>`}).join("")}
  <p class="texte">🎓 Erreurs transformées en leçons : <b>${E.lecons|0}</b></p><button class="petit" id="r">← Retour</button></div>`);
- document.getElementById("r").onclick=back}
+ document.getElementById("r").onclick=accueil}
 const etapeScene=()=>ETAPES.find(x=>x.scene===sceneActive&&!E.etapes[x.id])||null;
 function indicePNJ(e){if(presPNJ)return;presPNJ=true;toast(`📍 Clique sur le personnage ▼ (ou touche Entrée) pour : <b>${e.obj}</b>`,3.5)}
 function sceneCarte(){
- RETOUR=sceneCarte;enCours=false;verifierDefis();
+enCours=false;verifierDefis();
  const nxt=courante();if(!sceneActive){if(!nxt)return ecranFin();sceneActive=nxt.scene}
  if(!E.vu[sceneActive]){E.vu[sceneActive]=1;sauver()}
  const e=etapeScene();
@@ -599,14 +603,14 @@ function terminer(e,m,gain){
  document.getElementById("ok").onclick=e.id==="T12"?conseil:sceneCarte;
 }
 function conseil(){
- RETOUR=conseil;
+
  ecran(`<div class="carte tourcarte"><div class="braise">${SVG.feu}</div><h2>Le Conseil du Feu de Camp</h2><p class="texte">Ce que nous avons appris :</p>${BANQUE.trials.map(t=>`<div class="entree">${{or:"🥇",argent:"🥈",bronze:"🥉"}[E.etapes[t.id]]||"•"} ${t.notion}</div>`).join("")}<button id="ok">Continuer</button></div>`);
  document.getElementById("ok").onclick=()=>dialogue(CLIFF,ecranFin);
 }
 function statsJ(j){const g=E.joueurs[j].grimoire,ok=g.filter(x=>x.ok).length,nv=niveau(j);
  return `<div class="entree"><b>${JOUEURS[j].titre}</b><br>⭐ Niv. ${nv.n} · ${nv.titre} · ✨ ${E.joueurs[j].xp} XP<br>📖 ${g.length} questions · ✅ ${ok} justes (${g.length?Math.round(100*ok/g.length):0} %) · 🔁 ${revoir(j).length} à revoir</div>`}
 function ecranFin(){
- RETOUR=ecranFin;SON.victoire();const nb=m=>Object.values(E.etapes).filter(x=>x===m).length;
+SON.victoire();const nb=m=>Object.values(E.etapes).filter(x=>x===m).length;
  ecran(`<div class="carte tourcarte"><h1>🏁 Acte I accompli !</h1><p class="texte"><b>Objectif atteint :</b> vous voici aux portes de Bruxelles, première Page-Pays à restaurer. L'Atlas est encore déchiré… <i>à suivre dans l'Acte II.</i></p><p class="texte">⭐ Objectifs secondaires : ${nbDefis()}/${DEFIS.length} · 🎓 ${E.lecons|0} erreurs transformées en leçons</p><div class="entree">${DEFIS.map(d=>`${E.defis&&E.defis[d.id]?"✅":"⬜"} ${d.t}`).join("<br>")}</div>
  <div class="medaille">🥇 ${nb("or")} · 🥈 ${nb("argent")} · 🥉 ${nb("bronze")}</div><p class="texte">🪙 ${E.or} pièces · 🧭 ${E.objets.join(", ")||"—"}</p>${statsJ("badr")}${statsJ("othman")}
  <p><button id="gr">📖 Grimoires</button> <button class="petit" id="ac">⌂ Accueil</button></p></div>`);
@@ -616,7 +620,7 @@ function ecranFin(){
 /* ============================ ACCUEIL ============================ */
 const txtChrono=()=>"⏱️ Chronomètre du concours : "+(E.opt.chrono===false?"désactivé":"activé");
 function accueil(){
- RETOUR=accueil;
+
  ecran(`<div class="affiche"><div class="m">${SVG.nimrod}</div><div class="m lune"><svg viewBox="0 0 64 64"><path d="M40 8a24 24 0 1 0 0 48a19 19 0 1 1 0-48z" fill="#f0d27a" stroke="#c9962b" stroke-width="2"/></svg></div><div class="m">${SVG.selene}</div></div><div class="titre"><h1>Les Chroniques d'Al-Qamar</h1><p>La Conquête du Monde — Acte I : L'Atlas Déchiré</p></div>
  <div class="carte"><div class="menu">
  <button id="quete">⚔️ Mode Quête ${Object.keys(E.etapes).length?"(continuer)":""}</button>
