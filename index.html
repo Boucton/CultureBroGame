@@ -107,6 +107,7 @@ textarea{width:100%;height:90px;font:14px monospace;border:3px solid var(--or);b
 
 .illus{width:150px;margin:8px auto}.illus svg{width:100%;display:block;border:2px solid var(--or);border-radius:4px;background:#fff}
 .defi{margin:6px 0}.defi.ok{opacity:.8}
+.petit.sel{background:var(--or);color:var(--encre);border-color:var(--grenat)}
 </style>
 </head>
 <body>
@@ -155,7 +156,7 @@ function figurine(j){ // pion du joueur : base + lettre + familier
 /* ============================ SAUVEGARDE (base) ============================ */
 const CLE="alqamar_v1";
 function neuf(){return{actif:"badr",or:0,objets:[],etapes:{},opt:{son:true},collecte:{},sagesse:0,potions:0,parch:[],joueurs:{badr:{xp:0,grimoire:[]},othman:{xp:0,grimoire:[]}}}}
-function compl(o){o.opt=o.opt||{son:true};o.collecte=o.collecte||{};o.sagesse=o.sagesse|0;o.potions=o.potions|0;o.parch=o.parch||[];return o}
+function compl(o){o.opt=o.opt||{son:true};o.collecte=o.collecte||{};o.sagesse=o.sagesse|0;o.potions=o.potions|0;o.parch=o.parch||[];o.vu=o.vu||{};return o}
 function charger(){try{const s=JSON.parse(localStorage.getItem(CLE));if(s&&s.joueurs)return compl(s);return neuf()}catch(e){return neuf()}}
 function sauver(){try{localStorage.setItem(CLE,JSON.stringify(E))}catch(e){}}
 let E=charger();
@@ -359,7 +360,7 @@ function dialogue(lignes,fin){
 }
 /* ============================ SCÈNES DE L'ACTE I ============================ */
 const COL=7,LIG=5;
-let sceneActive=null,enCours=false,sansFondu=false;
+let sceneActive=null,enCours=false,sansFondu=false,presPNJ=false;
 const persoSVG=(robe,chap)=>`<svg viewBox="0 0 64 64"><path d="M6 62c0-22 12-30 26-30s26 8 26 30z" fill="${robe}" stroke="#c9962b" stroke-width="2.5"/><circle cx="32" cy="24" r="12" fill="#f0d9b0" stroke="#6b4a10" stroke-width="2"/><path d="M18 20c2-12 26-12 28 0-6-4-22-4-28 0z" fill="${chap}"/><circle cx="27" cy="23" r="2" fill="#2a1d10"/><circle cx="37" cy="23" r="2" fill="#2a1d10"/><path d="M27 30q5 4 10 0" stroke="#2a1d10" fill="none" stroke-width="2"/></svg>`;
 Object.assign(SVG,{
  marchand:persoSVG("#8c1d2f","#2c4a9e"),gardien:persoSVG("#2e5d3a","#c9962b"),
@@ -519,35 +520,47 @@ function ecranQuete(){
  <h3>⭐ Objectifs secondaires (${nbDefis()}/${DEFIS.length})</h3>${DEFIS.map(d=>{const ok=E.defis&&E.defis[d.id],n=Math.min(d.n(),d.max);return `<div class="defi ${ok?"ok":""}">${ok?"✅":"⬜"} ${d.t} <small>(${n}/${d.max}) → ${d.r}</small><div class="jauge petitej"><i style="width:${Math.round(100*n/d.max)}%"></i></div></div>`}).join("")}
  <p class="texte">🎓 Erreurs transformées en leçons : <b>${E.lecons|0}</b></p><button class="petit" id="r">← Retour</button></div>`);
  document.getElementById("r").onclick=back}
+const etapeScene=()=>ETAPES.find(x=>x.scene===sceneActive&&!E.etapes[x.id])||null;
+function indicePNJ(e){if(presPNJ)return;presPNJ=true;toast(`📍 Clique sur le personnage ▼ (ou touche Entrée) pour : <b>${e.obj}</b>`,3.5)}
 function sceneCarte(){
  RETOUR=sceneCarte;enCours=false;verifierDefis();
- const e=courante();if(!e)return ecranFin();
- if(e.scene!==sceneActive){sceneActive=e.scene;hero={x:0,y:4}}
- const piste=new Set();if(E.objets.includes("Boussole-Rose")){let px=hero.x,py=hero.y,g=0;while(Math.abs(px-e.x)+Math.abs(py-e.y)>1&&g++<20){if(px<e.x)px++;else if(px>e.x)px--;else if(py<e.y)py++;else py--;piste.add(px+","+py)}}
- const dc=DECORS[e.scene],liste=ETAPES.filter(x=>x.scene===e.scene),fait=liste.filter(x=>E.etapes[x.id]).length,gris=(1-fait/liste.length).toFixed(2);
- let h=`${hud()}<div class="carte" style="margin-bottom:10px"><b>${dc.nom}</b> — 🎯 <b>${e.obj}</b><div class="jauge petitej"><i style="width:${Math.round(100*nbFait()/ETAPES.length)}%"></i></div>🏁 Quête de Bruxelles : épreuve ${nbFait()+1}/${ETAPES.length} · ⭐ Défis ${nbDefis()}/${DEFIS.length}<br> <small>(clique ou flèches · marche sur les ✨ trésors et les décors qui brillent)</small></div>${horizon(e.scene)}<div class="plateau" id="plateau" style="--c1:${dc.c1};--c2:${dc.c2};--tex:${TEX[e.scene]}">`;
+ const nxt=courante();if(!sceneActive){if(!nxt)return ecranFin();sceneActive=nxt.scene}
+ if(!E.vu[sceneActive]){E.vu[sceneActive]=1;sauver()}
+ const e=etapeScene();
+ if(!e||!proche(e))presPNJ=false;
+ const piste=new Set();if(e&&E.objets.includes("Boussole-Rose")){let px=hero.x,py=hero.y,g=0;while(Math.abs(px-e.x)+Math.abs(py-e.y)>1&&g++<20){if(px<e.x)px++;else if(px>e.x)px--;else if(py<e.y)py++;else py--;piste.add(px+","+py)}}
+ const dc=DECORS[sceneActive],liste=ETAPES.filter(x=>x.scene===sceneActive),fait=liste.filter(x=>E.etapes[x.id]).length,gris=(1-fait/liste.length).toFixed(2);
+ const voy=CHAPITRES().map(c=>`<button class="petit ${c===sceneActive?"sel":""}" data-scene="${c}" ${E.vu[c]?"":"disabled"}>${E.vu[c]?"":"🔒 "}${DECORS[c].nom}</button>`).join(" ");
+ let h=`${hud()}<div class="carte" style="margin-bottom:10px">🧭 Voyage : ${voy}<br><b>${dc.nom}</b> — 🎯 <b>${e?e.obj:(nxt?"Prochaine épreuve (autre scène) : "+nxt.obj:"Toutes les épreuves d'ici sont accomplies — fouillez les trésors !")}</b><div class="jauge petitej"><i style="width:${Math.round(100*nbFait()/ETAPES.length)}%"></i></div>🚩 Quête de Bruxelles : ${nbFait()}/${ETAPES.length} · ⭐ Défis ${nbDefis()}/${DEFIS.length}<br> <small>(clique ou flèches · marche sur les ✨ trésors et les décors qui brillent · clique sur le personnage ▼ pour lui parler)</small></div>${horizon(sceneActive)}<div class="plateau" id="plateau" style="--c1:${dc.c1};--c2:${dc.c2};--tex:${TEX[sceneActive]}">`;
  for(let y=0;y<LIG;y++)for(let x=0;x<COL;x++){
-  const isP=e.x===x&&e.y===y,d=dc.d.find(a=>a[0]===x&&a[1]===y),it=dc.items.find(a=>a[0]===x&&a[1]===y);let c="";
-  if(hero.x===x&&hero.y===y)c=figurine(E.actif);else if(isP)c=`<div class="pion">${SVG[e.pnj]}</div>`;else if(it&&!E.collecte[cle(e.scene,it)])c=`<span class="item">${ICO[it[2]]}</span>`;else if(d)c=`<span class="deco ${E.collecte["fait:"+d[2]]?"":"neuf"}">${ICO[d[2]]}</span>`;
+  const isP=!!(e&&e.x===x&&e.y===y),d=dc.d.find(a=>a[0]===x&&a[1]===y),it=dc.items.find(a=>a[0]===x&&a[1]===y);let c="";
+  if(hero.x===x&&hero.y===y)c=figurine(E.actif);else if(isP)c=`<div class="pion">${SVG[e.pnj]}</div>`;else if(it&&!E.collecte[cle(sceneActive,it)])c=`<span class="item">${ICO[it[2]]}</span>`;else if(d)c=`<span class="deco ${E.collecte["fait:"+d[2]]?"":"neuf"}">${ICO[d[2]]}</span>`;
   h+=`<div class="case ${isP?"pnj":""} ${piste.has(x+","+y)?"dest":""}" data-x="${x}" data-y="${y}"><i class="sol" style="filter:grayscale(${gris})"></i>${c}</div>`}
  ecran(h+`</div><div class="pagination"><button class="petit" id="accueil">⌂ Accueil</button></div>`);
- document.querySelectorAll(".case").forEach(c=>c.onclick=()=>aller(+c.dataset.x,+c.dataset.y));
+ document.querySelectorAll(".case").forEach(c=>c.onclick=()=>{
+  const x=+c.dataset.x,y=+c.dataset.y;
+  if(e&&x===e.x&&y===e.y)return proche(e)?declencher(e):aller(x,y,true);
+  aller(x,y)});
+ document.querySelectorAll("[data-scene]").forEach(b=>b.onclick=()=>{if(b.disabled||b.dataset.scene===sceneActive)return;sceneActive=b.dataset.scene;hero={x:0,y:4};presPNJ=false;sauver();sceneCarte()});
  document.getElementById("accueil").onclick=accueil;
 }
-function aller(tx,ty){
- if(verrou||enCours)return;verrou=true;const e=courante();
+function aller(tx,ty,parler){
+ if(verrou||enCours)return;verrou=true;const e=etapeScene();
  const pas=setInterval(()=>{
   if(hero.x<tx)hero.x++;else if(hero.x>tx)hero.x--;else if(hero.y<ty)hero.y++;else if(hero.y>ty)hero.y--;
-  ramasser();if(proche(e)){clearInterval(pas);verrou=false;return declencher(e)}
-  if(hero.x===tx&&hero.y===ty){clearInterval(pas);verrou=false}
-  sansFondu=true;sceneCarte();
+  ramasser();sansFondu=true;sceneCarte();
+  if(e&&proche(e))indicePNJ(e);else presPNJ=false;
+  if((hero.x===tx&&hero.y===ty)||(parler&&e&&proche(e))){clearInterval(pas);verrou=false;if(parler&&e&&proche(e))declencher(e)}
  },140);
 }
 document.addEventListener("keydown",ev=>{
+ if(!document.getElementById("plateau")||verrou||enCours)return;
+ const e=etapeScene();
+ if((ev.key==="Enter"||ev.key===" ")&&e&&proche(e)){ev.preventDefault();return declencher(e)}
  const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[ev.key];
- if(!d||!document.getElementById("plateau")||verrou||enCours)return;ev.preventDefault();
+ if(!d)return;ev.preventDefault();
  hero.x=Math.max(0,Math.min(COL-1,hero.x+d[0]));hero.y=Math.max(0,Math.min(LIG-1,hero.y+d[1]));
- ramasser();const e=courante();if(proche(e))return declencher(e);
+ ramasser();if(e&&proche(e))indicePNJ(e);else presPNJ=false;
  sansFondu=true;sceneCarte();
 });
 function declencher(e){
