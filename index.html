@@ -115,20 +115,36 @@ textarea{width:100%;height:90px;font:14px monospace;border:3px solid var(--or);b
 <div id="app"></div>
 <button id="mute" class="petit" aria-label="Son"></button>
 
-<!-- Pour charger toute la banque de 72 questions : crée à côté de ce fichier
-     questions-acte1.js (le fichier fourni, qui définit QUESTIONS_ACTE_1) -->
-<script src="questions-acte1.js" onerror="void 0"></script>
 <script>
 "use strict";
 /* ============================ DONNÉES ============================ */
 // Banque intégrée (repli) : épreuve T01 seulement pour l'itération 1.
-const QUESTIONS_EMBED={trials:[{id:"T01",scene:"Scène 1 — Le Serment des Cartographes",object:"Boussole-Rose",notion:"Lire une carte : légende, rose des vents, continents",questions:[
-{id:"T01-Q1",othman:{enonce:"Sur une carte du monde, combien vois-tu de grands continents ?",choix:["3","6","10"],reponse:1,explication:"Il y a 6 continents : l'Afrique, l'Amérique du Nord, l'Amérique du Sud, l'Antarctique, l'Asie (avec l'Europe) et l'Océanie."},badr:{enonce:"Quelle est la différence entre un continent et un océan ?",choix:["Le continent est en pierre, l'océan en eau salée","Le continent est une immense étendue de terre, l'océan une immense étendue d'eau salée","Il n'y a aucune différence"],reponse:1,explication:"Un continent est une vaste étendue de terre émergée ; un océan est une vaste étendue d'eau salée. La Terre compte 6 continents et 5 océans."}},
-{id:"T01-Q2",othman:{enonce:"La petite flèche qui indique le Nord sur une carte s'appelle...",choix:["La rose des vents","La fleur de sel","L'étoile du sud"],reponse:0,explication:"La rose des vents indique les directions (Nord, Sud, Est, Ouest) sur une carte."},badr:{enonce:"Que trouve-t-on dans la légende d'une carte ?",choix:["L'histoire du pays","La signification des symboles et des couleurs","La liste des habitants"],reponse:1,explication:"La légende explique ce que signifient les symboles, couleurs et tracés d'une carte : capitales, fleuves, montagnes, frontières."}},
-{id:"T01-Q3",othman:{enonce:"Sur quelle carte verrais-tu la Tour Eiffel ?",choix:["La carte de la France","La carte du Japon","La carte du Maroc"],reponse:0,explication:"La Tour Eiffel se trouve à Paris, la capitale de la France, en Europe."},badr:{enonce:"Sur une carte, à quoi reconnaît-on la capitale d'un pays ?",choix:["Elle est écrite en très petit","Elle est souvent marquée d'un point ou d'une étoile et écrite en gras","Elle est dessinée en rouge partout"],reponse:1,explication:"Par convention cartographique, la capitale est signalée par un symbole distinct (point, étoile) et son nom en graissé."}}
-]}]};
-const BANQUE=(typeof QUESTIONS_ACTE_1!=="undefined"&&QUESTIONS_ACTE_1.trials)?QUESTIONS_ACTE_1:QUESTIONS_EMBED;
-const trial=id=>BANQUE.trials.find(t=>t.id===id);
+let BANQUE=null;
+function validerBanque(o,msg){if(!o||!Array.isArray(o.trials)||o.trials.length<1)throw new Error(msg);return o}
+function ecranBanqueManuelle(titre,detail){
+ ecran(`<div class="carte"><h2>📖 Banque de questions</h2><p class="texte">${titre}</p>
+ <p class="texte">${detail}</p>
+ <p class="texte">Sélectionne le fichier <b>Banque_de_questions_Acte_I.json</b> (il est à côté de index.html) :</p>
+ <input type="file" id="fichier" accept=".json,application/json" style="font:inherit">
+ <p id="err" class="texte"></p></div>`);
+ document.getElementById("fichier").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{BANQUE=validerBanque(JSON.parse(r.result),"Structure inattendue.");accueil()}catch(e){document.getElementById("err").textContent="⚠️ Fichier illisible : "+e.message}};
+  r.readAsText(f)};
+}
+function chargerBanque(){
+ let fait=false;
+ const manuel=(t,d)=>{if(fait)return;fait=true;ecranBanqueManuelle(t,d)};
+ try{
+  const x=new XMLHttpRequest();x.open("GET","Banque_de_questions_Acte_I.json");x.overrideMimeType("application/json");
+  x.onload=()=>{if(fait)return;if(x.status===200){try{BANQUE=validerBanque(JSON.parse(x.responseText),"Structure inattendue.");accueil()}catch(e){manuel("Le fichier JSON de la banque est illisible.",String(e.message))}}else manuel("La banque n'a pas pu être chargée automatiquement.","(réponse "+x.status+")")};
+  x.onerror=()=>manuel("Le navigateur bloque la lecture automatique des fichiers en local (double-clic).",
+   "C'est normal : ouvre le jeu via un serveur local ou GitHub Pages pour un chargement automatique — ou choisis le fichier ci-dessous, une seule fois par partie.");
+  x.onabort=()=>manuel("Chargement interrompu.","");
+  setTimeout(()=>manuel("La banque met trop de temps à charger.","Choisis le fichier manuellement ci-dessous."),6000);
+  x.send();
+ }catch(e){manuel("Chargement impossible.","Choisis le fichier manuellement ci-dessous.")}
+}
+const trial=id=>BANQUE&&BANQUE.trials.find(t=>t.id===id);
 
 const JOUEURS={
  badr:{nom:"Badr",titre:"Badr le Stratège",fam:"Nimrod",couleur:"#1b2f6b",lettre:"B"},
@@ -568,7 +584,7 @@ document.addEventListener("keydown",ev=>{
 });
 function declencher(e){
  if(enCours)return;enCours=true;
- if(!trial(e.id)){ecran(`${hud(1)}<div class="carte"><h2>Banque incomplète</h2><p class="texte">⚠️ Cette épreuve n'est pas dans la banque chargée. Place questions-acte1.js à côté de index.html.</p><button id="ok">Retour à la carte</button></div>`);document.getElementById("ok").onclick=sceneCarte;return}
+ if(!trial(e.id)){ecran(`${hud(1)}<div class="carte"><h2>Banque incomplète</h2><p class="texte">⚠️ Cette épreuve n'est pas dans la banque chargée. La banque JSON n'a pas été chargée — retourne à l'accueil puis recharge-la.</p><button id="ok">Retour à la carte</button></div>`);document.getElementById("ok").onclick=sceneCarte;return}
  dialogue(e.dial,()=>{
   if(e.type==="duel"||e.id==="T03")lancerDuel(e.id,m=>terminer(e,m));
   else if(e.id==="T07")lancerConcours(e.id,(b,n)=>terminer(e,b===n?"or":b>=n/2?"argent":"bronze",5*b));
@@ -610,12 +626,13 @@ function accueil(){
  <button id="cs">🔑 Code de sauvegarde</button>
  <button id="chr" class="petit">${txtChrono()}</button>
  <button id="nouvelle" class="petit">🗑️ Nouvelle partie</button></div>
- ${BANQUE.trials.length<12?`<div class="retour ko">⚠️ Banque complète non chargée — ${BANQUE.trials.length} épreuve sur 12. Place questions-acte1.js à côté de index.html.</div>`:`<p class="texte">Banque chargée : 12 épreuves.</p>`}</div>`);
+ ${BANQUE.trials.length<12?`<div class="retour ko">⚠️ Banque complète non chargée — ${BANQUE.trials.length} épreuve sur 12. Recharge la banque depuis l'accueil (fichier Banque_de_questions_Acte_I.json).</div>`:`<p class="texte">Banque chargée : 12 épreuves.</p>`}</div>`);
  document.getElementById("quete").onclick=()=>{hero={x:0,y:4};sceneActive=null;E.intro?sceneCarte():introQuete()};
  document.getElementById("gr").onclick=()=>ouvrirGrimoire();document.getElementById("cs").onclick=ecranSauvegarde;document.getElementById("chr").onclick=ev=>{E.opt.chrono=E.opt.chrono===false;sauver();ev.target.textContent=txtChrono()};
  document.getElementById("nouvelle").onclick=()=>{if(confirm("Effacer toute la progression et recommencer ?")){E=neuf();sauver();accueil()}};
 }
-accueil();
+ecran(`<div class="carte"><h2>Les Chroniques d'Al-Qamar</h2><p class="texte">Ouverture du Grand Atlas…</p></div>`);
+chargerBanque();
 </script>
 </body>
 </html>
