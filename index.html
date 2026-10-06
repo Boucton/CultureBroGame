@@ -26,6 +26,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
 .disco{position:relative;background:#fff8e6;border:3px solid var(--mer2);border-radius:10px;padding:12px;cursor:pointer;min-height:120px}
 .disco:hover{border-color:var(--or);background:#fff6cf}
+.disco.grand:hover{transform:scale(1.02)}
 .disco .ico{font-size:2em}
 .disco h3{margin:.1em 0 .2em;font-size:1em;color:var(--grenat)}
 .disco .rang{font-size:.8em;opacity:.85}
@@ -316,7 +317,14 @@ const CREATURES=[
 /* ======== SECTION MOTEUR DE QUESTIONS ======== */
 const MOTEUR={
  joueurActif:"othman",
- version(q){return q[this.joueurActif]||q.othman},
+ /* Mélange les choix à chaque affichage : la bonne réponse n'est jamais à place fixe.
+    Retourne {enonce,choix,reponse,explication} avec reponse recalculée selon la permutation. */
+ version(q){
+  const v=q[this.joueurActif]||q.othman;
+  const idx=[0,1,2];
+  for(let k=idx.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[idx[k],idx[j]]=[idx[j],idx[k]]}
+  return {enonce:v.enonce,choix:idx.map(i=>v.choix[i]),reponse:idx.indexOf(v.reponse),explication:v.explication};
+ },
  /* Choisit une question : priorité aux notions échouées (révision), sinon la première question non encore réussie de la discipline. */
  choisirNom(qid){
   for(const d of BANQUE.disciplines){const q=d.questions.find(x=>x.id===qid);if(q)return {q,revision:false}}
@@ -340,8 +348,12 @@ const GRIMOIRE={
   const st=E.joueurs[joueur];
   st.grimoire.unshift({q:qid,disc:discNom,enonce:enonce,repJoueur:reponseJoueur,repCorrecte:reponseCorrecte,explication:explication,ok:ok,date:new Date().toLocaleDateString("fr-FR")});
   if(st.grimoire.length>500)st.grimoire.length=500;
-  const p=st.progression[qid]||(st.progression[qid]={reussites:0,echecs:0,maitrise:false});
-  if(ok){p.reussites++;if(p.reussites>=2)p.maitrise=true}else{p.echecs++}
+  const p=st.progression[qid]||(st.progression[qid]={reussites:0,echecs:0,acquise:false,maitrise:false});
+  if(ok){
+   p.reussites++;
+   p.acquise=true;           /* 1re bonne réponse : la notion compte pour le niveau du royaume */
+   if(p.reussites>=2)p.maitrise=true;  /* 2e réussite : maîtrise, retirée de la révision */
+  }else{p.echecs++;p.acquise=false}
  }
 };
 
@@ -378,7 +390,7 @@ const COMBAT={
  niveau(st,discId){
   const disc=BANQUE.disciplines.find(d=>d.id===discId);
   let n=1;
-  disc.questions.forEach(q=>{const p=st.progression[q.id];if(p&&p.maitrise)n++});
+  disc.questions.forEach(q=>{const p=st.progression[q.id];if(p&&p.acquise)n++});
   return Math.min(n,10);
  },
  /* T2 : actions du tour du héros */
@@ -398,21 +410,23 @@ const COMBAT={
  resoudre(ok){
   const e=this.etat;if(!e||e.fini)return;
   if(ok){
+   /* Bonne réponse : le héros frappe, le Gardien ne riposte pas (une réussite = tour gagné). */
    let deg=e.caracs.attaque+Math.round(Math.random()*6);
    if(e.modeSagesse)deg*=2;
    e.gardienPv=Math.max(0,e.gardienPv-deg);
    e.modeSagesse=false;
-  }else{
-   this.tourGardien();
+   if(e.gardienPv<=0){e.fini=true;e.victoire=true}
+   SCENES.combat();
    return;
   }
-  if(e.gardienPv<=0){e.fini=true;e.victoire=true;SCENES.combat();return}
+  /* Erreur : l'Encre Noire profite du doute pour frapper — jamais la faute de l'enfant. */
   this.tourGardien();
  },
  /* Tour du Gardien : frappe, réduit par la défense si active */
  tourGardien(){
   const e=this.etat;if(!e||e.fini)return;
   let deg=e.forceG+Math.round(Math.random()*6);
+  e.tourFini=true;
   if(e.defenseActive){
    /* Bouclier : coup très réduit par la défense + le héros regagne un peu de souffle */
    deg=Math.max(0,Math.round(deg*(1-e.caracs.defense/100)-e.caracs.defense/2));
@@ -526,6 +540,7 @@ const BIBLIOTHECaire={
 const QUETE={
  etat:null,
  commencer(){
+  this.joueurInitial=MOTEUR.joueurActif;
   this.etat={joueur:["othman","badr"][Math.floor(Math.random()*2)],etape:0,etapeMax:6,lumiere:0};
   this.epreuve();
  },
@@ -534,7 +549,7 @@ const QUETE={
   if(e.etape>=e.etapeMax||e.lumiere>=100){this.fin();return}
   const disc=BANQUE.disciplines[Math.floor(Math.random()*BANQUE.disciplines.length)];
   const q=disc.questions[Math.floor(Math.random()*disc.questions.length)];
-  const v=q[e.joueur];
+  const v=MOTEUR.version(q);MOTEUR.joueurActif=e.joueur;
   const nomJoueur=E.joueurs[e.joueur].nom;
   UI.afficher(`<div class="carte">
   <div class="titre"><h2>🤝 Quête de la Lumière</h2><p>Épreuve ${e.etape+1} sur ${e.etapeMax}</p></div>
@@ -557,6 +572,7 @@ const QUETE={
  },
  fin(){
   const e=this.etat;
+  MOTEUR.joueurActif=this.joueurInitial||"othman";
   const reussi=e.lumiere>=100;
   UI.afficher(`<div class="carte">
   <div class="medaille">${reussi?"🌟":"🌙"}</div>
@@ -578,6 +594,7 @@ const QUETE={
 const VERSUS={
  etat:null,
  commencer(){
+  this.joueurInitial=MOTEUR.joueurActif;
   this.etat={scores:{othman:0,badr:0},joueur:"othman",reste:6};
   this.echange();
  },
@@ -586,7 +603,7 @@ const VERSUS={
   if(e.reste<=0){this.fin();return}
   const disc=BANQUE.disciplines[Math.floor(Math.random()*BANQUE.disciplines.length)];
   const q=disc.questions[Math.floor(Math.random()*disc.questions.length)];
-  const v=q[e.joueur];
+  const v=MOTEUR.version(q);MOTEUR.joueurActif=e.joueur;
   const nomJoueur=E.joueurs[e.joueur].nom;
   UI.afficher(`<div class="carte">
   <div class="titre"><h2>⚔️ Duel des frères</h2><p>Épreuves restantes : ${e.reste}</p></div>
@@ -611,6 +628,7 @@ const VERSUS={
  },
  fin(){
   const e=this.etat;
+  MOTEUR.joueurActif=this.joueurInitial||"othman";
   let titre,txt;
   if(e.scores.othman>e.scores.badr){titre="🏆 Othman remporte le duel !";txt="Bien joué Othman ! Badr, tes notions manquées reviendront en révision : la revanche sera belle.";E.joueurs.othman.or+=15}
   else if(e.scores.badr>e.scores.othman){titre="🏆 Badr remporte le duel !";txt="Bien joué Badr ! Othman, tes notions manquées reviendront en révision : la revanche sera belle.";E.joueurs.badr.or+=15}
@@ -630,37 +648,71 @@ const VERSUS={
  }
 };
 
+/* ======== SECTION AVENTURE (roaming) ======== */
+/* L'Aventure : le destin choisit le royaume — pas besoin de savoir quelle discipline tu réviseras.
+   Une surprise narrée à l'arrivée, puis un combat normal dans le royaume tiré au sort. */
+const AVENTURE={
+ intrigues:["Une étoile filante a pointé un royaume this nuit...".replace("this ","cette "),"Le vent du désert murmure un nom de royaume...","L'Encre Noire a été vue près d'un royaume : va voir !","Une Créature de savoir t'appelle en songe...","Le Marchand ambulant a croisé un Gardien bien arrogant..."],
+ commencer(){
+  const disc=BANQUE.disciplines[Math.floor(Math.random()*BANQUE.disciplines.length)];
+  const intrigue=this.intrigues[Math.floor(Math.random()*this.intrigues.length)];
+  UI.afficher(`<div class="carte zellige">
+  <div class="medaille">🏮</div>
+  <h2 style="text-align:center">L'Aventure appelle...</h2>
+  <p class="texte" style="text-align:center">${intrigue}</p>
+  <p class="texte" style="text-align:center">Ton chemin te mène au royaume de <b>${disc.ico} ${disc.nom}</b> !</p>
+  <div class="choix">
+   <button id="av-go">⚔️ Entrer dans le royaume</button>
+   <button id="av-autre">🎲 Tirer un autre royaume</button>
+   <button id="av-ret">🏠 Retour au hub</button>
+  </div></div>`);
+  document.getElementById("av-go").onclick=()=>COMBAT.commencer(disc.id);
+  document.getElementById("av-autre").onclick=()=>this.commencer();
+  document.getElementById("av-ret").onclick=()=>SCENES.accueil();
+ }
+};
+
 /* ======== SECTION SCÈNES ======== */
 const SCENES={
  accueil(){
+  const st=UI.etat();
+  const etoiles=BANQUE.disciplines.map(d=>{const nv=COMBAT.niveau(st,d.id);return nv>=10?"⭐":"📅"}).join("");
   UI.afficher(`
   <div class="titre"><h1>🌙 Les Chroniques d'Al-Qamar</h1><p>Le Pokédex de Culture Générale — V2</p></div>
-  <div class="carte">
-   <h2>⚔️ Choisis ton héros</h2>
-   <div class="choix">
-    <button id="j-othman">🧒 <b>O</b>thman (8 ans, primaire)</button>
-    <button id="j-badr">👦 <b>B</b>adr (12 ans, collège)</button>
-   </div>
+  <div class="hud" style="margin-bottom:14px">
+   <span class="joueur actif">🧙 ${st.nom} — ${st.rang} (niv. ${st.niveau})</span>
+   <span class="or">🦋 ${(st.creatures||[]).length}/${BIBLIOTHECaire.total()}</span>
+   <span class="or">🪙 ${st.or}</span>
   </div>
-  <div class="menu">
-   <button id="m-disc">🗺️ Les Royaumes de savoir (défis par discipline)</button>
-   <button id="m-entr">🎯 Entraînement libre (questions filtrables)</button>
-   <button id="m-quete">🤝 Quête coopérative (Othman et Badr en alternance)</button>
-   <button id="m-versus">⚔️ Versus 1 contre 1 (duel de frères)</button>
-   <button id="m-boutique">🛒 Le Marchand ambulant</button>
-   <button id="m-grimoire">📖 Mon Grimoire personnel</button>
-   <button id="m-bestiaire">🦋 Mon Bestiaire (Créatures de savoir)</button>
-   <button id="m-sauv">💾 Sauvegarde et code secours</button>
+  <div class="grille hub">
+   <div class="disco grand" id="m-aventure" style="grid-column:span 2;min-height:150px;border-color:var(--grenat)">
+    <div class="ico" style="font-size:2.6em">🏜️</div>
+    <h3 style="font-size:1.15em">Partir en Aventure</h3>
+    <div class="rang">Un royaume tiré au sort, des surprises à chaque fois — l'Encre Noire ne sait pas où tu iras !</div>
+   </div>
+   <div class="disco" id="j-swap-heros" style="border-color:var(--or)">
+    <div class="ico">${MOTEUR.joueurActif==="othman"?"🧒":"👦"}</div>
+    <h3>Héros : ${st.nom}</h3>
+    <div class="rang">${st.rang} — Touchez pour changer de héros</div>
+   </div>
+   <div class="disco" id="m-disc"><div class="ico">🗺️</div><h3>Royaumes</h3><div class="rang">Choisir une discipline et battre son Gardien</div></div>
+   <div class="disco" id="m-quete"><div class="ico">🤝</div><h3>Quête à deux</h3><div class="rang">Othman et Badr en alternance</div></div>
+   <div class="disco" id="m-versus"><div class="ico">⚔️</div><h3>Duel</h3><div class="rang">1 contre 1, questions de chacun son niveau</div></div>
+   <div class="disco" id="m-entr"><div class="ico">🎯</div><h3>S'entraîner</h3><div class="rang">Questions filtrables par discipline et état</div></div>
+   <div class="disco" id="m-bestiaire"><div class="ico">🦋</div><h3>Bestiaire</h3><div class="rang">Créatures de savoir capturées</div></div>
+   <div class="disco" id="m-grimoire"><div class="ico">📖</div><h3>Grimoire</h3><div class="rang">Toutes tes leçons revues</div></div>
+   <div class="disco" id="m-boutique"><div class="ico">🛒</div><h3>Marchand</h3><div class="rang">Indices, soins, talismans</div></div>
+   <div class="disco" id="m-sauv"><div class="ico">💾</div><h3>Sauvegarde</h3><div class="rang">Code secours recopiable</div></div>
   </div>`);
-  document.getElementById("j-othman").onclick=()=>UI.choisirJoueur("othman");
-  document.getElementById("j-badr").onclick=()=>UI.choisirJoueur("badr");
+  document.getElementById("m-aventure").onclick=()=>AVENTURE.commencer();
+  document.getElementById("j-swap-heros").onclick=()=>{UI.choisirJoueur(MOTEUR.joueurActif==="othman"?"badr":"othman")};
   document.getElementById("m-disc").onclick=()=>this.disciplines();
-  document.getElementById("m-entr").onclick=()=>this.entrainement();
   document.getElementById("m-quete").onclick=()=>QUETE.commencer();
   document.getElementById("m-versus").onclick=()=>VERSUS.commencer();
-  document.getElementById("m-boutique").onclick=()=>this.boutique();
-  document.getElementById("m-grimoire").onclick=()=>this.grimoire();
+  document.getElementById("m-entr").onclick=()=>this.entrainement();
   document.getElementById("m-bestiaire").onclick=()=>this.bestiaire();
+  document.getElementById("m-grimoire").onclick=()=>this.grimoire();
+  document.getElementById("m-boutique").onclick=()=>this.boutique();
   document.getElementById("m-sauv").onclick=()=>this.sauvegarde();
  },
  disciplines(){
@@ -899,15 +951,22 @@ const SCENES={
 
 /* ======== SECTION INTERFACE ======== */
 const UI={
- afficher(html){document.getElementById("app").innerHTML=html},
+ afficher(html){document.getElementById("app").innerHTML=html;this.apresRendu()},
  /* Sprite pixel-art avec repli emoji si absent */
  sprite(nom,classe,repli){const b64=SPRITES[nom];return b64?`<img src="data:image/png;base64,${b64}" class="${classe}" alt="${repli}">`:`<div class="${classe.replace("img","")}">${repli}</div>`},
  etat(){return E.joueurs[MOTEUR.joueurActif]},
  hud(){const st=this.etat();return `<div class="hud">
   <span class="joueur actif">🧙 ${st.nom} — ${st.rang} (niv. ${st.niveau})</span>
-  <span><button class="petit" id="h-swap">Changer de héros</button></span>
+  <span><button class="petit" id="h-swap">Changer de héros</button>
+  <button class="petit" id="h-hub">🏠 Hub</button></span>
   <span class="or">🦋 ${(st.creatures||[]).length}/${BIBLIOTHECaire.total()}</span>
   <span class="or">🪙 ${st.or}</span></div>`},
+ apresRendu(){
+  const sw=document.getElementById("h-swap");
+  if(sw)sw.onclick=()=>{SCENES.accueil()};
+  const hb=document.getElementById("h-hub");
+  if(hb)hb.onclick=()=>{SCENES.accueil()};
+ },
  choisirJoueur(j){MOTEUR.joueurActif=j;E.joueurActif=j;SAUVEGARDE.sauver();SCENES.disciplines()},
  toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)},
  repondre(q,v,i,discNom){
