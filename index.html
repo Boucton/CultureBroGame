@@ -225,6 +225,10 @@ const MOTEUR={
  joueurActif:"othman",
  version(q){return q[this.joueurActif]||q.othman},
  /* Choisit une question : priorité aux notions échouées (révision), sinon la première question non encore réussie de la discipline. */
+ choisirNom(qid){
+  for(const d of BANQUE.disciplines){const q=d.questions.find(x=>x.id===qid);if(q)return {q,revision:false}}
+  return null;
+ },
  choisir(discId){
   const disc=BANQUE.disciplines.find(d=>d.id===discId);
   const st=E.joueurs[this.joueurActif];
@@ -380,6 +384,118 @@ const SAUVEGARDE={
 let E=SAUVEGARDE.charger();
 MOTEUR.joueurActif=E.joueurActif||"othman";
 
+/* ======== SECTION QUÊTE COOPÉRATIVE ======== */
+/* Quête coopérative : Othman et Badr jouent ensemble au même clavier, chacun son tour.
+   Une série de 6 épreuves tirées de tout le royaume du savoir ; les deux héros avancent
+   la même barre de Lumière : chaque bonne réponse la fait grandir, l'objectif étant de
+   l'amener à 100 % avant la fin du récit. Le tour de chacun est annoncé clairement. */
+const QUETE={
+ etat:null,
+ commencer(){
+  this.etat={joueur:["othman","badr"][Math.floor(Math.random()*2)],etape:0,etapeMax:6,lumiere:0};
+  this.epreuve();
+ },
+ epreuve(){
+  const e=this.etat;
+  if(e.etape>=e.etapeMax||e.lumiere>=100){this.fin();return}
+  const disc=BANQUE.disciplines[Math.floor(Math.random()*BANQUE.disciplines.length)];
+  const q=disc.questions[Math.floor(Math.random()*disc.questions.length)];
+  const v=q[e.joueur];
+  const nomJoueur=E.joueurs[e.joueur].nom;
+  UI.afficher(`<div class="carte">
+  <div class="titre"><h2>🤝 Quête de la Lumière</h2><p>Épreuve ${e.etape+1} sur ${e.etapeMax}</p></div>
+  <div class="tour ${e.joueur}">À ${nomJoueur} de jouer !</div>
+  <div class="jauge"><i style="width:${e.lumiere}%"></i></div>
+  <p class="petite" style="text-align:center">Lumière du savoir : ${e.lumiere} %</p>
+  <p class="texte">${v.enonce}</p>
+  <div class="choix">${v.choix.map((c,i)=>`<button data-i="${i}"><b>${"ABC"[i]}</b>${c}</button>`).join("")}</div></div>`);
+  document.querySelectorAll(".choix button").forEach(b=>b.onclick=()=>{
+   const i=+b.dataset.i;
+   const ok=i===v.reponse;
+   GRIMOIRE.consigner(e.joueur,q.id,disc.nom,v.enonce,v.choix[i],v.choix[v.reponse],v.explication,ok);
+   if(ok){e.lumiere+=17;E.joueurs[e.joueur].or+=5}
+   else{e.lumiere=Math.max(0,e.lumiere-5);E.joueurs[e.joueur].or+=1}
+   SAUVEGARDE.sauver();
+   e.etape++;
+   e.joueur=e.joueur==="othman"?"badr":"othman";
+   this.epreuve();
+  });
+ },
+ fin(){
+  const e=this.etat;
+  const reussi=e.lumiere>=100;
+  UI.afficher(`<div class="carte">
+  <div class="medaille">${reussi?"🌟":"🌙"}</div>
+  <h2 style="text-align:center">${reussi?"La Lumière du savoir brille à 100 % !":"La nuit tombe sur la quête..."}</h2>
+  <p class="texte" style="text-align:center">${reussi?"Ensemble, Othman et Badr ont repoussé l'Encre Noire. Chacun reçoit 10 pièces d'or bonus !":"L'Encre Noire a résisté cette fois, mais les notions reviendront en révision. Retentez la quête ensemble !"}</p>
+  <p style="text-align:center">Lumière finale : ${e.lumiere} %</p>
+  <div class="choix">
+   <button id="q-ret">🗺️ Retour à l'accueil</button>
+  </div></div>`);
+  if(reussi){E.joueurs.othman.or+=10;E.joueurs.badr.or+=10;SAUVEGARDE.sauver()}
+  document.getElementById("q-ret").onclick=()=>SCENES.accueil();
+ }
+};
+
+/* ======== SECTION VERSUS ======== */
+/* Versus 1 contre 1 : Othman et Badr s'affrontent, chacun avec des questions adaptées à
+   son niveau (version othman pour Othman, version badr pour Badr). 3 échanges chacun,
+   celui qui remporte le plus d'épreuves gagne le duel — égalité possible. */
+const VERSUS={
+ etat:null,
+ commencer(){
+  this.etat={scores:{othman:0,badr:0},joueur:"othman",reste:6};
+  this.echange();
+ },
+ echange(){
+  const e=this.etat;
+  if(e.reste<=0){this.fin();return}
+  const disc=BANQUE.disciplines[Math.floor(Math.random()*BANQUE.disciplines.length)];
+  const q=disc.questions[Math.floor(Math.random()*disc.questions.length)];
+  const v=q[e.joueur];
+  const nomJoueur=E.joueurs[e.joueur].nom;
+  UI.afficher(`<div class="carte">
+  <div class="titre"><h2>⚔️ Duel des frères</h2><p>Épreuves restantes : ${e.reste}</p></div>
+  <div class="arene">
+   <div class="camp"><b>Othman</b><div class="petite">${e.scores.othman} ✔</div></div>
+   <div class="vs">⚡</div>
+   <div class="camp"><b>Badr</b><div class="petite">${e.scores.badr} ✔</div></div>
+  </div>
+  <div class="tour ${e.joueur}">À ${nomJoueur} de jouer !</div>
+  <p class="texte">${v.enonce}</p>
+  <div class="choix">${v.choix.map((c,i)=>`<button data-i="${i}"><b>${"ABC"[i]}</b>${c}</button>`).join("")}</div></div>`);
+  document.querySelectorAll(".choix button").forEach(b=>b.onclick=()=>{
+   const i=+b.dataset.i;
+   const ok=i===v.reponse;
+   GRIMOIRE.consigner(e.joueur,q.id,disc.nom,v.enonce,v.choix[i],v.choix[v.reponse],v.explication,ok);
+   if(ok)e.scores[e.joueur]++;
+   SAUVEGARDE.sauver();
+   e.reste--;
+   e.joueur=e.joueur==="othman"?"badr":"othman";
+   this.echange();
+  });
+ },
+ fin(){
+  const e=this.etat;
+  let titre,txt;
+  if(e.scores.othman>e.scores.badr){titre="🏆 Othman remporte le duel !";txt="Bien joué Othman ! Badr, tes notions manquées reviendront en révision : la revanche sera belle.";E.joueurs.othman.or+=15}
+  else if(e.scores.badr>e.scores.othman){titre="🏆 Badr remporte le duel !";txt="Bien joué Badr ! Othman, tes notions manquées reviendront en révision : la revanche sera belle.";E.joueurs.badr.or+=15}
+  else{titre="🤝 Égalité parfaite !";txt="Deux frères aussi malins l'un que l'autre : la Lumière du savoir brille pour tous les deux.";E.joueurs.othman.or+=5;E.joueurs.badr.or+=5}
+  SAUVEGARDE.sauver();
+  UI.afficher(`<div class="carte">
+  <div class="medaille">⚔️</div>
+  <h2 style="text-align:center">${titre}</h2>
+  <p class="texte" style="text-align:center">${txt}</p>
+  <p style="text-align:center">Score final — Othman ${e.scores.othman} : ${e.scores.badr} Badr</p>
+  <div class="choix">
+   <button id="v-ret">🗺️ Retour à l'accueil</button>
+   <button id="v-rev">🔄 Revanche</button>
+  </div></div>`);
+  document.getElementById("v-ret").onclick=()=>SCENES.accueil();
+  document.getElementById("v-rev").onclick=()=>this.commencer();
+ }
+};
+
 /* ======== SECTION SCÈNES ======== */
 const SCENES={
  accueil(){
@@ -394,6 +510,9 @@ const SCENES={
   </div>
   <div class="menu">
    <button id="m-disc">🗺️ Les Royaumes de savoir (défis par discipline)</button>
+   <button id="m-entr">🎯 Entraînement libre (questions filtrables)</button>
+   <button id="m-quete">🤝 Quête coopérative (Othman et Badr en alternance)</button>
+   <button id="m-versus">⚔️ Versus 1 contre 1 (duel de frères)</button>
    <button id="m-boutique">🛒 Le Marchand ambulant</button>
    <button id="m-grimoire">📖 Mon Grimoire personnel</button>
    <button id="m-sauv">💾 Sauvegarde et code secours</button>
@@ -401,6 +520,9 @@ const SCENES={
   document.getElementById("j-othman").onclick=()=>UI.choisirJoueur("othman");
   document.getElementById("j-badr").onclick=()=>UI.choisirJoueur("badr");
   document.getElementById("m-disc").onclick=()=>this.disciplines();
+  document.getElementById("m-entr").onclick=()=>this.entrainement();
+  document.getElementById("m-quete").onclick=()=>QUETE.commencer();
+  document.getElementById("m-versus").onclick=()=>VERSUS.commencer();
   document.getElementById("m-boutique").onclick=()=>this.boutique();
   document.getElementById("m-grimoire").onclick=()=>this.grimoire();
   document.getElementById("m-sauv").onclick=()=>this.sauvegarde();
@@ -513,6 +635,71 @@ const SCENES={
   const v=MOTEUR.version(q);
   const mauvaises=[0,1,2].filter(i=>i!==v.reponse);
   return mauvaises[Math.floor(Math.random()*mauvaises.length)];
+ },
+ /* T1 : Entraînement libre — questions filtrables par discipline et état (réussies / à revoir) */
+ entrainement(filtreDisc,filtreEtat){
+  const st=UI.etat();
+  const liste=this.questionsFiltrees(filtreDisc,filtreEtat);
+  const discs=BANQUE.disciplines.map(d=>`<button class="petit ${filtreDisc===d.id?"sel":""}" data-fd="${d.id}">${d.ico} ${d.nom}</button>`).join("");
+  const etats=`<button class="petit ${filtreEtat==="tout"||!filtreEtat?"sel":""}" data-fe="tout">Toutes</button>
+   <button class="petit ${filtreEtat==="ok"?"sel":""}" data-fe="ok">✔ Réussies</button>
+   <button class="petit ${filtreEtat==="ko"?"sel":""}" data-fe="ko">✘ À revoir</button>
+   <button class="petit ${filtreEtat==="neuve"?"sel":""}" data-fe="neuve">✨ Jamais posées</button>`;
+  UI.afficher(`${UI.hud()}<div class="carte"><h2>🎯 Entraînement libre de ${st.nom}</h2>
+  <p class="texte">Ici on s'entraîne sans combat : chaque bonne réponse rapporte 2 pièces d'or, aucune pénalité en cas d'erreur.</p>
+  <div class="onglets">${discs}</div>
+  <div class="onglets">${etats}</div>
+  <div id="e-liste" style="margin-top:10px">${this.listeEntrainement(liste)}</div>
+  <button id="e-ret" style="margin-top:10px">Retour</button></div>`);
+  document.querySelectorAll("[data-fd]").forEach(b=>b.onclick=()=>this.entrainement(b.dataset.fd,filtreEtat));
+  document.querySelectorAll("[data-fe]").forEach(b=>b.onclick=()=>this.entrainement(filtreDisc,b.dataset.fe));
+  document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>this.epreuveLibre(b.dataset.q));
+  document.getElementById("e-ret").onclick=()=>this.accueil();
+ },
+ questionsFiltrees(filtreDisc,filtreEtat){
+  const st=UI.etat();
+  let qs=[];
+  BANQUE.disciplines.forEach(d=>{
+   if(filtreDisc&&d.id!==filtreDisc)return;
+   d.questions.forEach(q=>{
+    const p=st.progression[q.id];
+    const etat=!p?"neuve":(p.maitrise?"ok":(p.echecs>0?"ko":"neuve"));
+    if(filtreEtat==="ok"&&etat!=="ok")return;
+    if(filtreEtat==="ko"&&etat!=="ko")return;
+    if(filtreEtat==="neuve"&&etat!=="neuve")return;
+    qs.push({q,disc:d.nom,discId:d.id});
+   });
+  });
+  return qs;
+ },
+ listeEntrainement(liste){
+  if(!liste.length)return "<p class='texte'>Aucune question ne correspond à ce filtre. Change de filtre ou affronte un Gardien !</p>";
+  return liste.slice(0,60).map(x=>{
+   const v=x.q[MOTEUR.joueurActif]||x.q.othman;
+   return `<div class="entree">${v.enonce}<br><button class="petit" data-q="${x.q.id}">Répondre</button></div>`;
+  }).join("");
+ },
+ epreuveLibre(qid){
+  let trouve=null,nomDisc="";
+  BANQUE.disciplines.forEach(d=>d.questions.forEach(q=>{if(q.id===qid){trouve=q;nomDisc=d.nom}}));
+  if(!trouve)return this.entrainement();
+  const {q,revision}=MOTEUR.choisirNom(qid);
+  const v=MOTEUR.version(q);
+  const reponseDonnee=(i)=>{
+   const ok=i===v.reponse;
+   GRIMOIRE.consigner(MOTEUR.joueurActif,q.id,nomDisc,v.enonce,v.choix[i],v.choix[v.reponse],v.explication,ok);
+   if(ok){E.joueurs[MOTEUR.joueurActif].or+=2}
+   SAUVEGARDE.sauver();
+   UI.afficher(`<div class="carte"><div class="retour ${ok?"ok":"ko"}">${ok?"✨ Juste ! +2 pièces d'or.":"🌑 Pas encore ! L'Encre Noire sème le doute, mais tu peux réessayer quand tu veux."}</div>
+   <div class="retour"><b>La bonne réponse :</b> ${v.choix[v.reponse]}<br><i>${v.explication}</i></div>
+   <button id="el-suite">Autre question</button> <button id="el-ret">Retour</button></div>`);
+   document.getElementById("el-suite").onclick=()=>SCENES.epreuveLibre(qid);
+   document.getElementById("el-ret").onclick=()=>SCENES.entrainement();
+  };
+  UI.afficher(`<div class="carte"><h2>🎯 ${nomDisc}</h2>
+  <p class="texte">${v.enonce}</p>
+  <div class="choix">${v.choix.map((c,i)=>`<button data-i="${i}"><b>${"ABC"[i]}</b>${c}</button>`).join("")}</div></div>`);
+  document.querySelectorAll(".choix button").forEach(b=>b.onclick=()=>reponseDonnee(+b.dataset.i));
  },
  boutique(){
   const st=UI.etat();
